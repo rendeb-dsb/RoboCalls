@@ -21,11 +21,14 @@
       <div class="goal-entry">
         <label for="goal">Goal:</label>
         <input id="goal" type="number" min="0" max="999" step="1" inputmode="numeric" value="0" aria-describedby="goal-help">
+        <span id="count" class="metric">Count: 0</span>
+        <span id="remaining" class="metric">Remaining: 0</span>
+      </div>
+      <div class="action-entry">
         <button id="doneButton" type="button">Done</button>
         <button id="removeLastButton" type="button">Remove Last</button>
+        <button id="keepLitButton" type="button" aria-pressed="false">Keep lit: Off</button>
       </div>
-      <span id="count" class="metric">Count: 0</span>
-      <span id="remaining" class="metric">Remaining: 0</span>
     </section>
     <div id="goal-help" class="sr-only">Enter an integer from 0 through 999. Leaving this field resets all outcome counters.</div>
     <p id="message" role="status" aria-live="polite"></p>

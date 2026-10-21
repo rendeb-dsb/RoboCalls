@@ -28,3 +28,6 @@ To use with GitHub Pages:
 2. Upload the files inside the RoboCalls-b1v1 folder to your repository.
 3. Enable GitHub Pages in repository settings.
 4. Open the published site on your phone browser.
+
+- Done and Remove Last buttons are on the line below Goal/Count/Remaining.
+- Keep lit: Off/On uses the browser Screen Wake Lock API when supported; it defaults to Off at app load.

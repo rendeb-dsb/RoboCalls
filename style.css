@@ -8,10 +8,12 @@ h1 { font-size: 1.55rem; text-align: center; margin: 0; letter-spacing: .02em; }
 .date-button { justify-self: end; border: 0; background: transparent; padding: 6px 0 6px 6px; font: inherit; font-size: .88rem; color: #174ea6; text-decoration: underline; cursor: pointer; white-space: nowrap; }
 #datePicker { position: absolute; right: 0; top: 100%; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .goal-panel { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 0; padding: 12px 0; }
-.goal-entry { display: flex; align-items: center; gap: 8px; width: 100%; }
+.goal-entry { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; }
+.action-entry { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; }
 .goal-entry label { font-weight: 700; }
 #goal { width: 59px; min-height: 38px; padding: 6px 7px; font-size: 1rem; border: 1px solid #888; border-radius: 5px; }
-#doneButton, #removeLastButton { min-height: 36px; padding: 6px 15px; font-size: 1rem; border: 1px solid #777; border-radius: 5px; background: #e6e6e6; cursor: pointer; }
+#doneButton, #removeLastButton, #keepLitButton { min-height: 36px; padding: 6px 15px; font-size: 1rem; border: 1px solid #777; border-radius: 5px; background: #e6e6e6; cursor: pointer; }
+#keepLitButton[aria-pressed="true"] { background: #d7ead9; border-color: #378447; }
 .metric { font-weight: 700; white-space: nowrap; }
 #count { margin-left: 16px; }
 #remaining { margin-left: 24px; }

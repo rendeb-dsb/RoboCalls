@@ -27,6 +27,7 @@
   const datePicker = document.getElementById('datePicker');
   const doneButton = document.getElementById('doneButton');
   const removeLastButton = document.getElementById('removeLastButton');
+  const keepLitButton = document.getElementById('keepLitButton');
 
   let db;
   let counts = labels.map(() => 0);
@@ -37,6 +38,10 @@
   let currentDate = localDateString(new Date());
   let goal = 0;
   let saving = false;
+  let keepLit = false;
+  let wakeLock = null;
+  keepLitButton.textContent = 'Keep lit: Off';
+  keepLitButton.setAttribute('aria-pressed', 'false');
 
   function localDateString(date) {
     const y = date.getFullYear();
@@ -298,6 +303,55 @@
     datePicker.style.opacity = '0';
     datePicker.style.width = '1px';
     datePicker.style.height = '1px';
+  });
+
+
+  async function enableKeepLit() {
+    keepLit = true;
+    keepLitButton.textContent = 'Keep lit: On';
+    keepLitButton.setAttribute('aria-pressed', 'true');
+    if ('wakeLock' in navigator && navigator.wakeLock?.request) {
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => {
+          wakeLock = null;
+          if (keepLit) {
+            // Wake locks may be released by the system; try again when the page is visible.
+            keepLitButton.textContent = 'Keep lit: On';
+          }
+        });
+      } catch (error) {
+        message.textContent = 'Keep lit is unavailable in this browser or context.';
+        console.warn('Wake Lock request failed:', error);
+      }
+    } else {
+      message.textContent = 'Keep lit is not supported by this browser.';
+    }
+  }
+
+  async function disableKeepLit() {
+    keepLit = false;
+    keepLitButton.textContent = 'Keep lit: Off';
+    keepLitButton.setAttribute('aria-pressed', 'false');
+    if (wakeLock) {
+      try { await wakeLock.release(); } catch (error) { console.warn(error); }
+      wakeLock = null;
+    }
+  }
+
+  keepLitButton.addEventListener('click', () => {
+    if (keepLit) disableKeepLit();
+    else enableKeepLit();
+  });
+
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible' && keepLit && !wakeLock && 'wakeLock' in navigator) {
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+      } catch (error) {
+        console.warn('Could not reacquire screen wake lock:', error);
+      }
+    }
   });
 
   async function start() {
