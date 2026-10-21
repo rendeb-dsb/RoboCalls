@@ -1,0 +1,10 @@
+{
+  "name": "RoboCalls",
+  "short_name": "RoboCalls",
+  "description": "A simple counter for robocall outcomes.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f6f8",
+  "theme_color": "#ffffff"
+}

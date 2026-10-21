@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>RoboCalls b1v1</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="app-title">
+      <span class="version">b1v1</span>
+      <h1>RoboCalls</h1>
+    </header>
+
+    <section class="goal-panel" aria-label="Goal and progress">
+      <label for="goal">Goal:</label>
+      <input id="goal" type="number" min="0" max="999" step="1" inputmode="numeric" value="0" aria-describedby="goal-help">
+      <span id="count" class="metric">Count: 0</span>
+      <span id="remaining" class="metric">Remaining: 0</span>
+    </section>
+    <div id="goal-help" class="sr-only">Enter an integer from 0 through 999. Leaving this field resets all outcome counters.</div>
+    <p id="message" role="status" aria-live="polite"></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th class="radio-col" scope="col">Select</th><th class="count-col" scope="col">Count</th><th scope="col">Outcome</th></tr>
+        </thead>
+        <tbody id="outcomes"></tbody>
+      </table>
+    </div>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
