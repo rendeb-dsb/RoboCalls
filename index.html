@@ -13,11 +13,16 @@
     <header class="app-title">
       <span class="version">b1v1</span>
       <h1>RoboCalls</h1>
+      <button id="dateButton" class="date-button" type="button" aria-label="Change date"></button>
+      <input id="datePicker" type="date" aria-label="Choose call date">
     </header>
 
     <section class="goal-panel" aria-label="Goal and progress">
-      <label for="goal">Goal:</label>
-      <input id="goal" type="number" min="0" max="999" step="1" inputmode="numeric" value="0" aria-describedby="goal-help">
+      <div class="goal-entry">
+        <label for="goal">Goal:</label>
+        <input id="goal" type="number" min="0" max="999" step="1" inputmode="numeric" value="0" aria-describedby="goal-help">
+        <button id="doneButton" type="button">Done</button>
+      </div>
       <span id="count" class="metric">Count: 0</span>
       <span id="remaining" class="metric">Remaining: 0</span>
     </section>
