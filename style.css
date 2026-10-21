@@ -11,7 +11,7 @@ h1 { font-size: 1.55rem; text-align: center; margin: 0; letter-spacing: .02em; }
 .goal-entry { display: flex; align-items: center; gap: 8px; width: 100%; }
 .goal-entry label { font-weight: 700; }
 #goal { width: 59px; min-height: 38px; padding: 6px 7px; font-size: 1rem; border: 1px solid #888; border-radius: 5px; }
-#doneButton { min-height: 36px; padding: 6px 15px; font-size: 1rem; border: 1px solid #777; border-radius: 5px; background: #fff; cursor: pointer; }
+#doneButton, #removeLastButton { min-height: 36px; padding: 6px 15px; font-size: 1rem; border: 1px solid #777; border-radius: 5px; background: #e6e6e6; cursor: pointer; }
 .metric { font-weight: 700; white-space: nowrap; }
 #count { margin-left: 16px; }
 #remaining { margin-left: 24px; }
@@ -25,8 +25,9 @@ tbody tr:last-child td { border-bottom: 0; }
 .count-col { width: 78px; text-align: right; }
 td.radio-cell { text-align: center; }
 input[type="radio"] { width: 22px; height: 22px; accent-color: #1769aa; cursor: pointer; }
-.count { display: inline-block; min-width: 2ch; text-align: right; font-variant-numeric: tabular-nums; color: #171717; font-weight: 400; }
+.count { display: inline-block; min-width: 2ch; text-align: left; font-variant-numeric: tabular-nums; color: #171717; font-weight: 400; }
 .count.highlight { color: #d00000; font-weight: 700; }
+.count.removed { color: #168a36; font-weight: 700; }
 .outcome-label { overflow-wrap: anywhere; color: #171717; font-weight: 400; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 @media (max-width: 420px) {

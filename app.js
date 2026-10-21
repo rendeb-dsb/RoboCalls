@@ -26,10 +26,13 @@
   const dateButton = document.getElementById('dateButton');
   const datePicker = document.getElementById('datePicker');
   const doneButton = document.getElementById('doneButton');
+  const removeLastButton = document.getElementById('removeLastButton');
 
   let db;
   let counts = labels.map(() => 0);
   let selectedIndex = null;
+  let lastCountIndex = null;
+  let lastCountWasRemoved = false;
   let resetTimer = null;
   let currentDate = localDateString(new Date());
   let goal = 0;
@@ -104,6 +107,8 @@
     if (resetTimer) clearTimeout(resetTimer);
     resetTimer = null;
     selectedIndex = null;
+    lastCountIndex = null;
+    lastCountWasRemoved = false;
     currentDate = date;
     dateButton.textContent = prettyDate(currentDate);
     datePicker.value = currentDate;
@@ -150,7 +155,7 @@
 
   function resetStyling() {
     document.querySelectorAll('.count').forEach(el => {
-      el.classList.remove('highlight');
+      el.classList.remove('highlight', 'removed');
       el.style.color = '';
       el.style.fontWeight = '';
     });
@@ -199,6 +204,8 @@
       if (el !== radio) el.checked = false;
     });
     selectedIndex = index;
+    lastCountIndex = index;
+    lastCountWasRemoved = false;
     counts[index] += 1;
     const countElement = document.getElementById(`count-${index}`);
     countElement.textContent = String(counts[index]);
@@ -244,6 +251,27 @@
     goalInput.value = String(goal);
     await saveWithMessage();
     message.textContent = totalCount() >= goal ? 'Goal reached!' : 'Counts saved for this day.';
+  });
+
+
+  removeLastButton.addEventListener('click', async () => {
+    if (lastCountIndex === null || lastCountWasRemoved || counts[lastCountIndex] <= 0) {
+      message.textContent = 'There is no recent count to remove.';
+      return;
+    }
+    if (resetTimer) clearTimeout(resetTimer);
+    resetTimer = null;
+    selectedIndex = null;
+    document.querySelectorAll('input[name="outcome"]').forEach(el => { el.checked = false; });
+    resetStyling();
+    counts[lastCountIndex] = Math.max(0, counts[lastCountIndex] - 1);
+    const countElement = document.getElementById(`count-${lastCountIndex}`);
+    countElement.textContent = String(counts[lastCountIndex]);
+    countElement.classList.add('removed');
+    lastCountWasRemoved = true;
+    updateProgress();
+    await saveWithMessage();
+    if (totalCount() < goal) message.textContent = 'Last count removed.';
   });
 
   dateButton.addEventListener('click', () => {

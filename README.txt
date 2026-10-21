@@ -16,6 +16,7 @@ Features:
 - Remaining is max(Goal - Count, 0).
 - "Goal reached!" appears when Count is greater than or equal to Goal.
 - Done saves the current date's goal and counters.
+- Remove Last decrements the most recently incremented outcome counter by one and highlights that count in bold green.
 - Reaching the goal saves the current date's goal and counters.
 - The date at the right of the title opens a date picker.
 - On launch or date change, the app loads that day's saved Goal and outcome counters from IndexedDB.
