@@ -13,7 +13,8 @@ h1 { font-size: 1.55rem; text-align: center; margin: 0; letter-spacing: .02em; }
 .goal-entry label { font-weight: 700; }
 #goal { width: 59px; min-height: 38px; padding: 6px 7px; font-size: 1rem; border: 1px solid #888; border-radius: 5px; }
 #doneButton, #removeLastButton, #keepLitButton { min-height: 36px; padding: 6px 15px; font-size: 1rem; border: 1px solid #777; border-radius: 5px; background: #e6e6e6; cursor: pointer; }
-#keepLitButton[aria-pressed="true"] { background: #d7ead9; border-color: #378447; }
+#keepLitButton { margin-left: auto; }
+#keepLitButton[aria-pressed="true"] { background: #e6e6e6; border-color: #777; }
 .metric { font-weight: 700; white-space: nowrap; }
 #count { margin-left: 16px; }
 #remaining { margin-left: 24px; }

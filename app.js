@@ -315,17 +315,14 @@
         wakeLock = await navigator.wakeLock.request('screen');
         wakeLock.addEventListener('release', () => {
           wakeLock = null;
-          if (keepLit) {
-            // Wake locks may be released by the system; try again when the page is visible.
-            keepLitButton.textContent = 'Keep lit: On';
-          }
         });
       } catch (error) {
-        message.textContent = 'Keep lit is unavailable in this browser or context.';
+        // Keep the toggle state visible even if the browser refuses the wake lock.
+        message.textContent = 'Keep lit is On, but this browser could not prevent screen sleep.';
         console.warn('Wake Lock request failed:', error);
       }
     } else {
-      message.textContent = 'Keep lit is not supported by this browser.';
+      message.textContent = 'Keep lit is On, but this browser does not support screen wake lock.';
     }
   }
 
@@ -340,8 +337,11 @@
   }
 
   keepLitButton.addEventListener('click', () => {
-    if (keepLit) disableKeepLit();
-    else enableKeepLit();
+    if (keepLit) {
+      disableKeepLit();
+    } else {
+      enableKeepLit();
+    }
   });
 
   document.addEventListener('visibilitychange', async () => {
