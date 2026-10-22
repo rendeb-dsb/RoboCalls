@@ -13,6 +13,7 @@
     <header class="app-title">
       <span class="version">b1v1</span>
       <h1>RoboCalls</h1>
+      <span id="elapsed" class="version elapsed">00:00:00</span>
       <button id="dateButton" class="date-button" type="button" aria-label="Change date"></button>
       <input id="datePicker" type="date" aria-label="Choose call date">
     </header>
@@ -23,24 +24,34 @@
         <input id="goal" type="number" min="0" max="999" step="1" inputmode="numeric" value="0" aria-describedby="goal-help">
         <span id="count" class="metric">Count: 0</span>
         <span id="remaining" class="metric">Remaining: 0</span>
+        <button id="listButton" type="button">List</button>
       </div>
       <div class="action-entry">
         <button id="doneButton" type="button">Done</button>
         <button id="removeLastButton" type="button">Remove Last</button>
+        <button id="resetButton" type="button">Reset</button>
         <button id="keepLitButton" type="button" aria-pressed="false">Keep lit: Off</button>
       </div>
     </section>
     <div id="goal-help" class="sr-only">Enter an integer from 0 through 999. Leaving this field resets all outcome counters.</div>
     <p id="message" role="status" aria-live="polite"></p>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th class="radio-col" scope="col">Select</th><th class="count-col" scope="col">Count</th><th scope="col">Outcome</th></tr>
-        </thead>
-        <tbody id="outcomes"></tbody>
-      </table>
+    <div id="mainScreen">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th class="radio-col" scope="col">Select</th><th class="count-col" scope="col">Count</th><th scope="col">Outcome</th></tr>
+          </thead>
+          <tbody id="outcomes"></tbody>
+        </table>
+      </div>
     </div>
+    <section id="listScreen" hidden>
+      <button id="backButton" type="button">Back</button>
+      <div class="list-table-wrap">
+        <table id="historyTable"><thead id="historyHead"></thead><tbody id="historyBody"></tbody></table>
+      </div>
+    </section>
   </main>
   <script src="app.js"></script>
 </body>

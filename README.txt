@@ -31,3 +31,8 @@ To use with GitHub Pages:
 
 - Done and Remove Last buttons are on the line below Goal/Count/Remaining.
 - Keep lit: Off/On uses the browser Screen Wake Lock API when supported; it defaults to Off at app load.
+
+- Table rows shortened to approximately two-thirds of prior height.
+- Goal edits no longer clear counters; use Reset to clear counters.
+- Elapsed time displays as hh:mm:ss beside the title and stops at Goal reached or Done.
+- List shows outcomes by row and saved dates by column; Radio and Outcome columns are sticky. Back returns to the main screen.

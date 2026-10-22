@@ -28,6 +28,14 @@
   const doneButton = document.getElementById('doneButton');
   const removeLastButton = document.getElementById('removeLastButton');
   const keepLitButton = document.getElementById('keepLitButton');
+  const resetButton = document.getElementById('resetButton');
+  const listButton = document.getElementById('listButton');
+  const backButton = document.getElementById('backButton');
+  const mainScreen = document.getElementById('mainScreen');
+  const listScreen = document.getElementById('listScreen');
+  const historyHead = document.getElementById('historyHead');
+  const historyBody = document.getElementById('historyBody');
+  const elapsedDisplay = document.getElementById('elapsed');
 
   let db;
   let counts = labels.map(() => 0);
@@ -38,6 +46,9 @@
   let currentDate = localDateString(new Date());
   let goal = 0;
   let saving = false;
+  let elapsedSeconds = 0;
+  let elapsedInterval = null;
+  let timerStopped = false;
   let keepLit = false;
   let wakeLock = null;
   keepLitButton.textContent = 'Keep lit: Off';
@@ -128,7 +139,10 @@
       }
       goalInput.value = String(goal);
       renderRows();
-      message.textContent = totalCount() >= goal ? 'Goal reached!' : '';
+      elapsedSeconds=0; elapsedDisplay.textContent='00:00:00'; timerStopped=false;
+      if(elapsedInterval) clearInterval(elapsedInterval); elapsedInterval=null;
+      if(totalCount()>=goal){stopElapsedTimer();message.textContent='Goal reached!';}
+      else {message.textContent='';startElapsedTimer();}
     } catch (error) {
       message.textContent = 'Could not load this day’s counts.';
       console.error(error);
@@ -152,6 +166,7 @@
     remainingDisplay.textContent = `Remaining: ${Math.max(0, goal - total)}`;
     if (total >= goal) {
       message.textContent = 'Goal reached!';
+      stopElapsedTimer();
       saveWithMessage();
     } else {
       message.textContent = '';
@@ -236,22 +251,15 @@
     }
   });
 
-  goalInput.addEventListener('blur', async () => {
-    if (goalInput.value === '' || !Number.isInteger(Number(goalInput.value)) || Number(goalInput.value) < 0 || Number(goalInput.value) > 999) {
-      goalInput.value = '0';
-    }
+  goalInput.addEventListener('blur', () => {
     goal = validGoalOrZero();
+    goalInput.value = String(goal);
     goalInput.setCustomValidity('');
-    // Per the original requirement, leaving Goal clears all outcome counters.
-    counts = labels.map(() => 0);
-    selectedIndex = null;
-    if (resetTimer) clearTimeout(resetTimer);
-    resetTimer = null;
-    renderRows();
-    await saveWithMessage();
+    updateProgress();
   });
 
   doneButton.addEventListener('click', async () => {
+    stopElapsedTimer();
     goal = validGoalOrZero();
     goalInput.value = String(goal);
     await saveWithMessage();
@@ -305,6 +313,56 @@
     datePicker.style.height = '1px';
   });
 
+
+
+  function formatElapsed(n) {
+    return [Math.floor(n/3600), Math.floor((n%3600)/60), n%60].map(v=>String(v).padStart(2,'0')).join(':');
+  }
+  function startElapsedTimer() {
+    if (elapsedInterval || timerStopped) return;
+    elapsedInterval=setInterval(()=>{ elapsedSeconds++; elapsedDisplay.textContent=formatElapsed(elapsedSeconds); },1000);
+  }
+  function stopElapsedTimer() {
+    timerStopped=true;
+    if(elapsedInterval) clearInterval(elapsedInterval);
+    elapsedInterval=null;
+  }
+  function resetElapsedTimer() {
+    if(elapsedInterval) clearInterval(elapsedInterval);
+    elapsedInterval=null; elapsedSeconds=0; timerStopped=false;
+    elapsedDisplay.textContent='00:00:00'; startElapsedTimer();
+  }
+  async function buildHistoryTable() {
+    historyHead.replaceChildren(); historyBody.replaceChildren();
+    const records=await new Promise((resolve,reject)=>{
+      const tx=db.transaction(STORE,'readonly'), req=tx.objectStore(STORE).getAll();
+      req.onsuccess=()=>resolve(req.result||[]); req.onerror=()=>reject(req.error);
+    }).catch(e=>{console.error(e);return [];});
+    records.sort((a,b)=>a.date.localeCompare(b.date));
+    const hr=document.createElement('tr');
+    const rh=document.createElement('th'); rh.className='sticky-radio'; rh.textContent='Radio';
+    const oh=document.createElement('th'); oh.className='sticky-outcome'; oh.textContent='Outcome';
+    hr.append(rh,oh);
+    records.forEach(r=>{const th=document.createElement('th');th.className='history-date';th.textContent=r.date;hr.appendChild(th);});
+    historyHead.appendChild(hr);
+    labels.forEach((label,i)=>{
+      const tr=document.createElement('tr');
+      const rc=document.createElement('td');rc.className='sticky-radio';
+      const radio=document.createElement('input');radio.type='radio';radio.name='historyOutcome';radio.setAttribute('aria-label',`Select ${label}`);rc.appendChild(radio);
+      const oc=document.createElement('td');oc.className='sticky-outcome';oc.textContent=label;tr.append(rc,oc);
+      records.forEach(r=>{const td=document.createElement('td');td.className='history-date';td.textContent=String(Number.isInteger(r.counts?.[i])?r.counts[i]:0);tr.appendChild(td);});
+      historyBody.appendChild(tr);
+    });
+  }
+  listButton.addEventListener('click',async()=>{mainScreen.hidden=true;listScreen.hidden=false;await buildHistoryTable();});
+  backButton.addEventListener('click',()=>{listScreen.hidden=true;mainScreen.hidden=false;renderRows();});
+  resetButton.addEventListener('click',async()=>{
+    counts=labels.map(()=>0); selectedIndex=null; lastCountIndex=null; lastCountWasRemoved=false;
+    if(resetTimer)clearTimeout(resetTimer); resetTimer=null;
+    document.querySelectorAll('input[name="outcome"]').forEach(el=>el.checked=false);
+    resetStyling(); renderRows(); resetElapsedTimer(); await saveWithMessage();
+    message.textContent='Counters reset.';
+  });
 
   async function enableKeepLit() {
     keepLit = true;

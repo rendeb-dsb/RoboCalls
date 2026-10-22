@@ -2,9 +2,10 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: #f5f6f8; color: #171717; }
 .app { width: 100%; max-width: 760px; margin: 0 auto; padding: 12px; }
-.app-title { display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; min-height: 44px; position: relative; }
+.app-title { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; column-gap: 10px; align-items: center; min-height: 44px; position: relative; }
 .version { font-size: 0.9rem; color: #555; }
 h1 { font-size: 1.55rem; text-align: center; margin: 0; letter-spacing: .02em; }
+.elapsed { text-align: right; white-space: nowrap; }
 .date-button { justify-self: end; border: 0; background: transparent; padding: 6px 0 6px 6px; font: inherit; font-size: .88rem; color: #174ea6; text-decoration: underline; cursor: pointer; white-space: nowrap; }
 #datePicker { position: absolute; right: 0; top: 100%; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .goal-panel { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 0; padding: 12px 0; }
@@ -21,7 +22,7 @@ h1 { font-size: 1.55rem; text-align: center; margin: 0; letter-spacing: .02em; }
 #message { margin: 0 0 10px; min-height: 1.3em; color: #14752b; font-weight: 700; }
 .table-wrap { overflow-x: auto; background: white; border: 1px solid #d0d3d8; border-radius: 7px; }
 table { border-collapse: collapse; width: 100%; table-layout: fixed; }
-th, td { border-bottom: 1px solid #e0e2e6; padding: 10px 8px; text-align: left; vertical-align: middle; }
+th, td { border-bottom: 1px solid #e0e2e6; padding: 6px 8px; text-align: left; vertical-align: middle; }
 th { background: #e9edf2; font-size: .9rem; }
 tbody tr:last-child td { border-bottom: 0; }
 .radio-col { width: 76px; text-align: center; }
@@ -42,4 +43,24 @@ input[type="radio"] { width: 22px; height: 22px; accent-color: #1769aa; cursor: 
   .radio-col { width: 58px; }
   .count-col { width: 62px; }
   .date-button { font-size: .78rem; }
+}
+
+#listButton { margin-left: auto; }
+#doneButton, #removeLastButton, #resetButton, #keepLitButton, #listButton, #backButton { min-height: 36px; padding: 6px 15px; font-size: 1rem; border: 1px solid #777; border-radius: 5px; background: #e6e6e6; cursor: pointer; }
+#keepLitButton { margin-left: auto; }
+#listScreen { margin-top: 8px; }
+#backButton { margin: 0 0 10px; }
+.list-table-wrap { overflow: auto; max-height: 72vh; border: 1px solid #d0d3d8; border-radius: 7px; background: #fff; }
+#historyTable { min-width: 100%; width: max-content; border-collapse: separate; border-spacing: 0; }
+#historyTable th, #historyTable td { padding: 6px 8px; min-width: 90px; background: #fff; }
+#historyTable thead th { position: sticky; top: 0; z-index: 4; background: #e9edf2; }
+#historyTable .sticky-radio { position: sticky; left: 0; z-index: 3; min-width: 58px; width: 58px; background: #fff; }
+#historyTable .sticky-outcome { position: sticky; left: 58px; z-index: 3; min-width: 180px; background: #fff; }
+#historyTable thead .sticky-radio, #historyTable thead .sticky-outcome { z-index: 6; background: #e9edf2; }
+#historyTable .history-date { text-align: center; }
+@media (max-width: 420px) {
+ .app-title { column-gap: 4px; grid-template-columns: auto minmax(0, 1fr) auto auto; }
+ .version { font-size: .75rem; } h1 { font-size: 1.2rem; } .date-button { font-size: .72rem; }
+ th, td { padding: 4px 6px; }
+ #historyTable .sticky-outcome { min-width: 160px; left: 58px; }
 }
