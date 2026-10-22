@@ -54,7 +54,7 @@ input[type="radio"] { width: 22px; height: 22px; accent-color: #1769aa; cursor: 
 #backButton { margin: 0 0 10px; }
 .list-table-wrap { overflow: auto; max-height: 72vh; border: 1px solid #d0d3d8; border-radius: 7px; background: #fff; }
 #historyTable { min-width: 100%; width: max-content; border-collapse: separate; border-spacing: 0; }
-#historyTable th, #historyTable td { padding: 6px 8px; min-width: 90px; background: #fff; }
+#historyTable th, #historyTable td { padding: 6px 8px; min-width: 75px; background: #fff; }
 #historyTable thead th { position: sticky; top: 0; z-index: 4; background: #e9edf2; }
 #historyTable .sticky-radio { position: sticky; left: 0; z-index: 3; min-width: 58px; width: 58px; background: #fff; }
 #historyTable .sticky-outcome { position: sticky; left: 58px; z-index: 3; min-width: 180px; background: #fff; }
@@ -68,4 +68,9 @@ input[type="radio"] { width: 22px; height: 22px; accent-color: #1769aa; cursor: 
  .action-entry button { font-size: .72rem; padding-left: 3px; padding-right: 3px; letter-spacing: -.02em; }
  #historyTable th, #historyTable td { padding: 4px 6px; }
  #historyTable .sticky-outcome { min-width: 160px; left: 58px; }
+}
+
+#removeLastButton { padding-left: 3px; padding-right: 3px; }
+@media (max-width: 420px) {
+  #removeLastButton { padding-left: 2px; padding-right: 2px; }
 }
