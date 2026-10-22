@@ -26,7 +26,9 @@ th, td { border-bottom: 1px solid #e0e2e6; padding: 6px 8px; text-align: left; v
 th { background: #e9edf2; font-size: .9rem; }
 tbody tr:last-child td { border-bottom: 0; }
 .radio-col { width: 76px; text-align: center; }
-.count-col { width: 78px; text-align: left; }
+.count-col { width: 62px; text-align: left; }
+.percent-col { width: 62px; text-align: left; }
+.percent-value { display: inline-block; min-width: 4ch; text-align: left; font-variant-numeric: tabular-nums; }
 td.radio-cell { text-align: center; }
 input[type="radio"] { width: 22px; height: 22px; accent-color: #1769aa; cursor: pointer; }
 .count { display: inline-block; min-width: 2ch; text-align: left; font-variant-numeric: tabular-nums; color: #171717; font-weight: 400; }
@@ -41,7 +43,9 @@ input[type="radio"] { width: 22px; height: 22px; accent-color: #1769aa; cursor: 
   .metric { font-size: .93rem; }
   th, td { padding: 9px 6px; }
   .radio-col { width: 58px; }
-  .count-col { width: 62px; }
+  .count-col { width: 52px; }
+  .percent-col { width: 52px; }
+  .timer-controls { font-size: .82rem; }
   .date-button { font-size: .78rem; }
 }
 
@@ -74,3 +78,8 @@ input[type="radio"] { width: 22px; height: 22px; accent-color: #1769aa; cursor: 
 @media (max-width: 420px) {
   #removeLastButton { padding-left: 2px; padding-right: 2px; }
 }
+
+.timer-controls { display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 0 0 4px; font-size: .9rem; }
+.timer-controls label { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.timer-controls input { width: 18px; height: 18px; }
+.outcome-label.highlight, .percent-value.highlight { color: #d00000; font-weight: 700; }

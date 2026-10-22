@@ -2,7 +2,7 @@
   'use strict';
 
   const DB_NAME = 'RoboCallsDB';
-  const DB_VERSION = 2;
+  const DB_VERSION = 3;
   const STORE = 'dailyRecords';
   const labels = [
     'Voice mail left',
@@ -13,7 +13,6 @@
     'No robocalls',
     'Moved',
     'Skip',
-    "Number doesn't match caller",
     'Spoke full message',
     'Refused - Hung up'
   ];
@@ -27,7 +26,8 @@
   const datePicker = document.getElementById('datePicker');
   const doneButton = document.getElementById('doneButton');
   const removeLastButton = document.getElementById('removeLastButton');
-  const keepLitButton = document.getElementById('keepLitButton');
+  const keepLitCheck = document.getElementById('keepLitCheck');
+  const pausedCheck = document.getElementById('pausedCheck');
   const resetButton = document.getElementById('resetButton');
   const listButton = document.getElementById('listButton');
   const backButton = document.getElementById('backButton');
@@ -50,9 +50,8 @@
   let elapsedInterval = null;
   let timerStopped = false;
   let keepLit = false;
+  let timerPaused = false;
   let wakeLock = null;
-  keepLitButton.textContent = 'Keep lit: Off';
-  keepLitButton.setAttribute('aria-pressed', 'false');
 
   function localDateString(date) {
     const y = date.getFullYear();
@@ -70,10 +69,24 @@
   function openDatabase() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
-      request.onupgradeneeded = () => {
+      request.onupgradeneeded = (event) => {
         const database = request.result;
         if (!database.objectStoreNames.contains(STORE)) {
           database.createObjectStore(STORE, { keyPath: 'date' });
+        } else if (event.oldVersion < 3) {
+          const store = request.transaction.objectStore(STORE);
+          const cursorRequest = store.openCursor();
+          cursorRequest.onsuccess = () => {
+            const cursor = cursorRequest.result;
+            if (!cursor) return;
+            const record = cursor.value;
+            if (Array.isArray(record.counts) && record.counts.length >= 11) {
+              record.counts.splice(8, 1);
+              record.total = record.counts.reduce((sum, n) => sum + (Number(n) || 0), 0);
+              cursor.update(record);
+            }
+            cursor.continue();
+          };
         }
       };
       request.onsuccess = () => { db = request.result; resolve(); };
@@ -154,6 +167,22 @@
     return counts.reduce((sum, n) => sum + n, 0);
   }
 
+  function formatPercent(value, total) {
+    return `${total > 0 ? (value * 100 / total).toFixed(1) : '0.0'}%`;
+  }
+
+  function updatePercentages() {
+    const total = totalCount();
+    counts.forEach((value, i) => {
+      const element = document.getElementById(`percent-${i}`);
+      if (element) element.textContent = formatPercent(value, total);
+    });
+  }
+
+  function showGoalReachedPopup() {
+    window.alert('The RoboCall app says:\nGoal reached!');
+  }
+
   function validGoalOrZero() {
     const n = Number(goalInput.value);
     if (goalInput.value === '' || !Number.isInteger(n) || n < 0 || n > 999) return 0;
@@ -164,9 +193,10 @@
     const total = totalCount();
     countDisplay.textContent = `Count: ${total}`;
     remainingDisplay.textContent = `Remaining: ${Math.max(0, goal - total)}`;
+    updatePercentages();
     if (total >= goal) {
-      message.textContent = 'Goal reached!';
       stopElapsedTimer();
+      message.textContent = '';
       saveWithMessage();
     } else {
       message.textContent = '';
@@ -174,7 +204,7 @@
   }
 
   function resetStyling() {
-    document.querySelectorAll('.count').forEach(el => {
+    document.querySelectorAll('.count, .percent-value, .outcome-label').forEach(el => {
       el.classList.remove('highlight', 'removed');
       el.style.color = '';
       el.style.fontWeight = '';
@@ -208,10 +238,18 @@
       count.textContent = String(counts[i]);
       countCell.appendChild(count);
 
+      const percentCell = document.createElement('td');
+      percentCell.className = 'percent-col';
+      const percent = document.createElement('span');
+      percent.className = 'percent-value';
+      percent.id = `percent-${i}`;
+      percent.textContent = formatPercent(counts[i], totalCount());
+      percentCell.appendChild(percent);
+
       const labelCell = document.createElement('td');
       labelCell.className = 'outcome-label';
       labelCell.textContent = label;
-      tr.append(radioCell, countCell, labelCell);
+      tr.append(radioCell, countCell, percentCell, labelCell);
       tbody.appendChild(tr);
     });
     updateProgress();
@@ -227,10 +265,16 @@
     lastCountIndex = index;
     lastCountWasRemoved = false;
     counts[index] += 1;
+    const previousTotal = totalCount() - 1;
     const countElement = document.getElementById(`count-${index}`);
     countElement.textContent = String(counts[index]);
     countElement.classList.add('highlight');
+    const outcomeElement = countElement.closest('tr').querySelector('.outcome-label');
+    outcomeElement.classList.add('highlight');
+    const percentElement = document.getElementById(`percent-${index}`);
+    percentElement.classList.add('highlight');
     updateProgress();
+    if (previousTotal < goal && totalCount() >= goal) showGoalReachedPopup();
     await saveWithMessage();
 
     resetTimer = setTimeout(() => {
@@ -281,6 +325,7 @@
     const countElement = document.getElementById(`count-${lastCountIndex}`);
     countElement.textContent = String(counts[lastCountIndex]);
     countElement.classList.add('removed');
+    updatePercentages();
     lastCountWasRemoved = true;
     updateProgress();
     await saveWithMessage();
@@ -319,7 +364,7 @@
     return [Math.floor(n/3600), Math.floor((n%3600)/60), n%60].map(v=>String(v).padStart(2,'0')).join(':');
   }
   function startElapsedTimer() {
-    if (elapsedInterval || timerStopped) return;
+    if (elapsedInterval || timerStopped || timerPaused) return;
     elapsedInterval=setInterval(()=>{ elapsedSeconds++; elapsedDisplay.textContent=formatElapsed(elapsedSeconds); },1000);
   }
   function stopElapsedTimer() {
@@ -332,13 +377,23 @@
     elapsedInterval=null; elapsedSeconds=0; timerStopped=false;
     elapsedDisplay.textContent='00:00:00'; startElapsedTimer();
   }
+
+  pausedCheck.addEventListener('change', () => {
+    timerPaused = pausedCheck.checked;
+    if (timerPaused) {
+      if (elapsedInterval) clearInterval(elapsedInterval);
+      elapsedInterval = null;
+    } else {
+      startElapsedTimer();
+    }
+  });
   async function buildHistoryTable() {
     historyHead.replaceChildren(); historyBody.replaceChildren();
     const records=await new Promise((resolve,reject)=>{
       const tx=db.transaction(STORE,'readonly'), req=tx.objectStore(STORE).getAll();
       req.onsuccess=()=>resolve(req.result||[]); req.onerror=()=>reject(req.error);
     }).catch(e=>{console.error(e);return [];});
-    records.sort((a,b)=>a.date.localeCompare(b.date));
+    records.sort((a,b)=>b.date.localeCompare(a.date));
     const hr=document.createElement('tr');
     const rh=document.createElement('th'); rh.className='sticky-radio'; rh.textContent='Radio';
     const oh=document.createElement('th'); oh.className='sticky-outcome'; oh.textContent='Outcome';
@@ -370,43 +425,27 @@
     message.textContent='Counters reset.';
   });
 
-  async function enableKeepLit() {
-    keepLit = true;
-    keepLitButton.textContent = 'Keep lit: On';
-    keepLitButton.setAttribute('aria-pressed', 'true');
-    if ('wakeLock' in navigator && navigator.wakeLock?.request) {
-      try {
-        wakeLock = await navigator.wakeLock.request('screen');
-        wakeLock.addEventListener('release', () => {
-          wakeLock = null;
-        });
-      } catch (error) {
-        // Keep the toggle state visible even if the browser refuses the wake lock.
-        message.textContent = 'Keep lit is On, but this browser could not prevent screen sleep.';
-        console.warn('Wake Lock request failed:', error);
+  async function setKeepLit(enabled) {
+    keepLit = enabled;
+    if (keepLit) {
+      if ('wakeLock' in navigator && navigator.wakeLock?.request) {
+        try {
+          wakeLock = await navigator.wakeLock.request('screen');
+          wakeLock.addEventListener('release', () => { wakeLock = null; });
+        } catch (error) {
+          message.textContent = 'Keep Lit is checked, but this browser could not prevent screen sleep.';
+          console.warn('Wake Lock request failed:', error);
+        }
+      } else {
+        message.textContent = 'Keep Lit is checked, but this browser does not support screen wake lock.';
       }
-    } else {
-      message.textContent = 'Keep lit is On, but this browser does not support screen wake lock.';
-    }
-  }
-
-  async function disableKeepLit() {
-    keepLit = false;
-    keepLitButton.textContent = 'Keep lit: Off';
-    keepLitButton.setAttribute('aria-pressed', 'false');
-    if (wakeLock) {
+    } else if (wakeLock) {
       try { await wakeLock.release(); } catch (error) { console.warn(error); }
       wakeLock = null;
     }
   }
 
-  keepLitButton.addEventListener('click', () => {
-    if (keepLit) {
-      disableKeepLit();
-    } else {
-      enableKeepLit();
-    }
-  });
+  keepLitCheck.addEventListener('change', () => setKeepLit(keepLitCheck.checked));
 
   document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'visible' && keepLit && !wakeLock && 'wakeLock' in navigator) {

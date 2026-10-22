@@ -17,6 +17,10 @@
       <button id="dateButton" class="date-button" type="button" aria-label="Change date"></button>
       <input id="datePicker" type="date" aria-label="Choose call date">
     </header>
+    <div class="timer-controls">
+      <label><input id="keepLitCheck" type="checkbox"> Keep Lit:</label>
+      <label><input id="pausedCheck" type="checkbox"> Paused</label>
+    </div>
 
     <section class="goal-panel" aria-label="Goal and progress">
       <div class="goal-entry">
@@ -30,7 +34,6 @@
         <button id="doneButton" type="button">Done</button>
         <button id="removeLastButton" type="button">Remove Last</button>
         <button id="resetButton" type="button">Reset</button>
-        <button id="keepLitButton" type="button" aria-pressed="false">Keep lit: Off</button>
       </div>
     </section>
     <div id="goal-help" class="sr-only">Enter an integer from 0 through 999. Use Reset to clear all outcome counters.</div>
@@ -40,7 +43,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th class="radio-col" scope="col">Select</th><th class="count-col" scope="col">Count</th><th scope="col">Outcome</th></tr>
+            <tr><th class="radio-col" scope="col">Select</th><th class="count-col" scope="col">Count</th><th class="percent-col" scope="col">%</th><th scope="col">Outcome</th></tr>
           </thead>
           <tbody id="outcomes"></tbody>
         </table>
