@@ -343,7 +343,13 @@
     const rh=document.createElement('th'); rh.className='sticky-radio'; rh.textContent='Radio';
     const oh=document.createElement('th'); oh.className='sticky-outcome'; oh.textContent='Outcome';
     hr.append(rh,oh);
-    records.forEach(r=>{const th=document.createElement('th');th.className='history-date';th.textContent=r.date;hr.appendChild(th);});
+    records.forEach(r=>{
+      const th=document.createElement('th');th.className='history-date';
+      const date=new Date(`${r.date}T12:00:00`);
+      const weekday=document.createElement('div');weekday.textContent=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][date.getDay()];
+      const dayMonth=document.createElement('div');dayMonth.textContent=`${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}`;
+      th.append(weekday,dayMonth);hr.appendChild(th);
+    });
     historyHead.appendChild(hr);
     labels.forEach((label,i)=>{
       const tr=document.createElement('tr');
