@@ -2,7 +2,7 @@
   'use strict';
 
   const DB_NAME = 'RoboCallsDB';
-  const DB_VERSION = 3;
+  const DB_VERSION = 4;
   const STORE = 'dailyRecords';
   const labels = [
     'Voice mail left',
@@ -109,6 +109,7 @@
       goal,
       counts: [...counts],
       total: counts.reduce((sum, n) => sum + n, 0),
+      time: elapsedSeconds,
       updatedAt: new Date().toISOString()
     };
     return new Promise((resolve, reject) => {
@@ -146,16 +147,20 @@
       if (record) {
         counts = labels.map((_, i) => Number.isInteger(record.counts?.[i]) && record.counts[i] >= 0 ? record.counts[i] : 0);
         goal = Number.isInteger(record.goal) && record.goal >= 0 && record.goal <= 999 ? record.goal : 0;
+        elapsedSeconds = Number.isInteger(record.time) && record.time >= 0 ? record.time : 0;
       } else {
         counts = labels.map(() => 0);
         goal = 0;
+        elapsedSeconds = 0;
       }
       goalInput.value = String(goal);
       renderRows();
-      elapsedSeconds=0; elapsedDisplay.textContent='00:00:00'; timerStopped=false;
-      if(elapsedInterval) clearInterval(elapsedInterval); elapsedInterval=null;
-      if(totalCount()>=goal){stopElapsedTimer();message.textContent='Goal reached!';}
-      else {message.textContent='';startElapsedTimer();}
+      elapsedDisplay.textContent = formatElapsed(elapsedSeconds);
+      timerStopped = false;
+      if (elapsedInterval) clearInterval(elapsedInterval);
+      elapsedInterval = null;
+      if (totalCount() >= goal) { stopElapsedTimer(); message.textContent = ''; }
+      else { message.textContent = ''; startElapsedTimer(); }
     } catch (error) {
       message.textContent = 'Could not load this day’s counts.';
       console.error(error);
@@ -292,6 +297,10 @@
       goalInput.setCustomValidity('');
       goal = goalInput.value === '' ? 0 : n;
       updateProgress();
+      if (totalCount() < goal && !timerPaused && !elapsedInterval) {
+        timerStopped = false;
+        startElapsedTimer();
+      }
     }
   });
 
@@ -300,6 +309,10 @@
     goalInput.value = String(goal);
     goalInput.setCustomValidity('');
     updateProgress();
+    if (totalCount() < goal && !timerPaused && !elapsedInterval) {
+      timerStopped = false;
+      startElapsedTimer();
+    }
   });
 
   doneButton.addEventListener('click', async () => {
@@ -325,6 +338,9 @@
     const countElement = document.getElementById(`count-${lastCountIndex}`);
     countElement.textContent = String(counts[lastCountIndex]);
     countElement.classList.add('removed');
+    const removedRow = countElement.closest('tr');
+    removedRow.querySelector('.outcome-label').classList.add('removed');
+    document.getElementById(`percent-${lastCountIndex}`).classList.add('removed');
     updatePercentages();
     lastCountWasRemoved = true;
     updateProgress();
@@ -403,7 +419,8 @@
       const date=new Date(`${r.date}T12:00:00`);
       const weekday=document.createElement('div');weekday.textContent=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][date.getDay()];
       const dayMonth=document.createElement('div');dayMonth.textContent=`${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}`;
-      th.append(weekday,dayMonth);hr.appendChild(th);
+      const savedTime=document.createElement('div');savedTime.className='saved-time';savedTime.textContent=formatElapsed(Number.isInteger(r.time) && r.time >= 0 ? r.time : 0);
+      th.append(weekday,dayMonth,savedTime);hr.appendChild(th);
     });
     historyHead.appendChild(hr);
     labels.forEach((label,i)=>{
