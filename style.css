@@ -123,3 +123,10 @@ input[type="radio"] { width: 22px; height: 22px; accent-color: #1769aa; cursor: 
  .new-block-control input { width: 16px; height: 16px; }
  .progress-metrics .metric { font-size: .76rem; }
 }
+
+.block-controls { display: flex; flex-direction: column; align-items: flex-end; justify-self: end; align-self: stretch; gap: 3px; }
+.block-controls #blockCount { text-align: right; }
+@media (max-width: 420px) {
+  .block-controls { gap: 2px; }
+  .block-controls #blockCount { font-size: .76rem; }
+}
