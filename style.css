@@ -86,3 +86,28 @@ input[type="radio"] { width: 22px; height: 22px; accent-color: #1769aa; cursor: 
 
 .percent-value.removed, .outcome-label.removed { color: #168a36; font-weight: 700; }
 .saved-time { font-size: .78rem; font-weight: 400; white-space: nowrap; }
+
+/* Progress metrics stack Count above Remaining. */
+.goal-entry { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; column-gap: 8px; }
+.progress-metrics { display: flex; flex-direction: column; align-items: flex-start; justify-self: stretch; gap: 2px; }
+#count, #remaining { margin-left: 0; }
+.action-entry { display: flex; flex-wrap: nowrap; align-items: stretch; gap: 5px; }
+#doneButton, #resetButton, #listButton { flex: 0 0 15%; min-width: 0; padding-left: 3px; padding-right: 3px; }
+#removeLastButton { flex: 1 1 auto; min-width: 0; }
+#listButton { margin-left: auto; background: #dbeafe; border-color: #2563eb; }
+#listButton.active { background: #93c5fd; border-color: #1d4ed8; }
+#doneButton, #removeLastButton, #resetButton, #listButton { min-height: 36px; height: 36px; }
+.confirm-backdrop { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.confirm-backdrop[hidden] { display: none; }
+.confirm-box { width: min(320px, 100%); background: white; border-radius: 10px; padding: 18px; box-shadow: 0 8px 30px rgba(0,0,0,.25); text-align: center; }
+.confirm-box h2 { font-size: 1.05rem; margin: 0 0 12px; }
+.confirm-box p { font-size: 1.1rem; margin: 12px 0 18px; }
+.confirm-box div { display: flex; justify-content: center; gap: 16px; }
+.confirm-box button { min-width: 84px; padding: 8px 16px; border: 1px solid #777; border-radius: 6px; font-size: 1rem; }
+@media (max-width: 420px) {
+ .goal-entry { grid-template-columns: auto auto minmax(0,1fr); column-gap: 5px; }
+ .metric { font-size: .82rem; }
+ #doneButton, #resetButton, #listButton { flex-basis: 15%; }
+ .action-entry { gap: 4px; }
+ .action-entry button { font-size: .72rem; }
+}

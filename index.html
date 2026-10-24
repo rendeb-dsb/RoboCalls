@@ -18,7 +18,7 @@
       <input id="datePicker" type="date" aria-label="Choose call date">
     </header>
     <div class="timer-controls">
-      <label><input id="keepLitCheck" type="checkbox"> Keep Lit:</label>
+      <label><input id="keepLitCheck" type="checkbox"> Keep Lit</label>
       <label><input id="pausedCheck" type="checkbox"> Paused</label>
     </div>
 
@@ -26,14 +26,13 @@
       <div class="goal-entry">
         <label for="goal">Goal:</label>
         <input id="goal" type="number" min="0" max="999" step="1" inputmode="numeric" value="0" aria-describedby="goal-help">
-        <span id="count" class="metric">Count: 0</span>
-        <span id="remaining" class="metric">Remaining: 0</span>
-        <button id="listButton" type="button">List</button>
+        <div class="progress-metrics"><span id="count" class="metric">Count: 0</span><span id="remaining" class="metric">Remaining: 0</span></div>
       </div>
       <div class="action-entry">
         <button id="doneButton" type="button">Done</button>
         <button id="removeLastButton" type="button">Remove Last</button>
         <button id="resetButton" type="button">Reset</button>
+        <button id="listButton" type="button">List</button>
       </div>
     </section>
     <div id="goal-help" class="sr-only">Enter an integer from 0 through 999. Use Reset to clear all outcome counters.</div>
@@ -43,7 +42,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th class="radio-col" scope="col">Select</th><th class="count-col" scope="col">Count</th><th class="percent-col" scope="col">%</th><th scope="col">Outcome</th></tr>
+            <tr><th class="radio-col" scope="col">Select</th><th class="count-col" scope="col">Count</th><th scope="col">Outcome</th><th class="percent-col" scope="col">%</th></tr>
           </thead>
           <tbody id="outcomes"></tbody>
         </table>
@@ -55,6 +54,13 @@
         <table id="historyTable"><thead id="historyHead"></thead><tbody id="historyBody"></tbody></table>
       </div>
     </section>
+    <div id="confirmDialog" class="confirm-backdrop" hidden>
+      <section class="confirm-box" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <h2 id="confirmTitle">The RoboCall app says:</h2>
+        <p>Are you sure?</p>
+        <div><button id="confirmYes" type="button">Yes</button><button id="confirmNo" type="button">No</button></div>
+      </section>
+    </div>
   </main>
   <script src="app.js"></script>
 </body>

@@ -159,8 +159,8 @@
       timerStopped = false;
       if (elapsedInterval) clearInterval(elapsedInterval);
       elapsedInterval = null;
-      if (totalCount() >= goal) { stopElapsedTimer(); message.textContent = ''; }
-      else { message.textContent = ''; startElapsedTimer(); }
+      message.textContent = '';
+      if (!timerPaused) startElapsedTimer();
     } catch (error) {
       message.textContent = 'Could not load this day’s counts.';
       console.error(error);
@@ -198,9 +198,9 @@
     const total = totalCount();
     countDisplay.textContent = `Count: ${total}`;
     remainingDisplay.textContent = `Remaining: ${Math.max(0, goal - total)}`;
+    goalInput.disabled = total > 0;
     updatePercentages();
     if (total >= goal) {
-      stopElapsedTimer();
       message.textContent = '';
       saveWithMessage();
     } else {
@@ -254,13 +254,18 @@
       const labelCell = document.createElement('td');
       labelCell.className = 'outcome-label';
       labelCell.textContent = label;
-      tr.append(radioCell, countCell, percentCell, labelCell);
+      tr.append(radioCell, countCell, labelCell, percentCell);
       tbody.appendChild(tr);
     });
     updateProgress();
   }
 
   async function recordOutcome(index, radio) {
+    if (pausedCheck.checked) {
+      pausedCheck.checked = false;
+      timerPaused = false;
+      if (!timerStopped) startElapsedTimer();
+    }
     if (resetTimer) clearTimeout(resetTimer);
     resetStyling();
     document.querySelectorAll('input[name="outcome"]').forEach(el => {
@@ -315,16 +320,38 @@
     }
   });
 
-  doneButton.addEventListener('click', async () => {
+  const confirmDialog = document.getElementById('confirmDialog');
+  const confirmYes = document.getElementById('confirmYes');
+  const confirmNo = document.getElementById('confirmNo');
+  let pendingConfirmAction = null;
+  function askConfirmation(action) {
+    pendingConfirmAction = action;
+    confirmDialog.hidden = false;
+  }
+  function closeConfirmation(confirmed) {
+    confirmDialog.hidden = true;
+    const action = pendingConfirmAction;
+    pendingConfirmAction = null;
+    if (confirmed && action) action();
+  }
+  confirmYes.addEventListener('click', () => closeConfirmation(true));
+  confirmNo.addEventListener('click', () => closeConfirmation(false));
+
+  doneButton.addEventListener('click', () => askConfirmation(async () => {
     stopElapsedTimer();
     goal = validGoalOrZero();
     goalInput.value = String(goal);
     await saveWithMessage();
-    message.textContent = totalCount() >= goal ? 'Goal reached!' : 'Counts saved for this day.';
-  });
+    message.textContent = totalCount() >= goal ? '' : 'Counts saved for this day.';
+  }));
 
 
   removeLastButton.addEventListener('click', async () => {
+    if (pausedCheck.checked) {
+      pausedCheck.checked = false;
+      timerPaused = false;
+      if (!timerStopped) startElapsedTimer();
+    }
     if (lastCountIndex === null || lastCountWasRemoved || counts[lastCountIndex] <= 0) {
       message.textContent = 'There is no recent count to remove.';
       return;
@@ -420,7 +447,12 @@
       const weekday=document.createElement('div');weekday.textContent=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][date.getDay()];
       const dayMonth=document.createElement('div');dayMonth.textContent=`${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}`;
       const savedTime=document.createElement('div');savedTime.className='saved-time';savedTime.textContent=formatElapsed(Number.isInteger(r.time) && r.time >= 0 ? r.time : 0);
-      th.append(weekday,dayMonth,savedTime);hr.appendChild(th);
+      const savedGoal = Number.isInteger(r.goal) && r.goal >= 0 ? r.goal : 0;
+      const savedCount = Number.isInteger(r.total) ? r.total : (Array.isArray(r.counts) ? r.counts.reduce((sum,n)=>sum+(Number(n)||0),0) : 0);
+      const goalLine=document.createElement('div');goalLine.className='history-goal';goalLine.textContent=`Goal: ${savedGoal}`;
+      const countLine=document.createElement('div');countLine.className='history-total';countLine.textContent=`Count: ${savedCount}`;
+      countLine.style.color = savedCount < savedGoal ? '#d00000' : '#168a36';
+      th.append(weekday,dayMonth,savedTime,goalLine,countLine);hr.appendChild(th);
     });
     historyHead.appendChild(hr);
     labels.forEach((label,i)=>{
@@ -432,15 +464,15 @@
       historyBody.appendChild(tr);
     });
   }
-  listButton.addEventListener('click',async()=>{mainScreen.hidden=true;listScreen.hidden=false;await buildHistoryTable();});
-  backButton.addEventListener('click',()=>{listScreen.hidden=true;mainScreen.hidden=false;renderRows();});
-  resetButton.addEventListener('click',async()=>{
+  listButton.addEventListener('click',async()=>{mainScreen.hidden=true;listScreen.hidden=false;listButton.classList.add('active');await buildHistoryTable();});
+  backButton.addEventListener('click',()=>{listScreen.hidden=true;mainScreen.hidden=false;listButton.classList.remove('active');renderRows();});
+  resetButton.addEventListener('click',()=>askConfirmation(async()=>{
     counts=labels.map(()=>0); selectedIndex=null; lastCountIndex=null; lastCountWasRemoved=false;
     if(resetTimer)clearTimeout(resetTimer); resetTimer=null;
     document.querySelectorAll('input[name="outcome"]').forEach(el=>el.checked=false);
     resetStyling(); renderRows(); resetElapsedTimer(); await saveWithMessage();
     message.textContent='Counters reset.';
-  });
+  }));
 
   async function setKeepLit(enabled) {
     keepLit = enabled;
@@ -464,15 +496,18 @@
 
   keepLitCheck.addEventListener('change', () => setKeepLit(keepLitCheck.checked));
 
-  document.addEventListener('visibilitychange', async () => {
-    if (document.visibilityState === 'visible' && keepLit && !wakeLock && 'wakeLock' in navigator) {
+  async function reacquireWakeLock() {
+    if (document.visibilityState === 'visible' && keepLitCheck.checked && !wakeLock && 'wakeLock' in navigator) {
       try {
         wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
       } catch (error) {
         console.warn('Could not reacquire screen wake lock:', error);
       }
     }
-  });
+  }
+  document.addEventListener('visibilitychange', reacquireWakeLock);
+  window.addEventListener('focus', reacquireWakeLock);
 
   async function start() {
     try {
