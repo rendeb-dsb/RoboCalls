@@ -111,3 +111,15 @@ input[type="radio"] { width: 22px; height: 22px; accent-color: #1769aa; cursor: 
  .action-entry { gap: 4px; }
  .action-entry button { font-size: .72rem; }
 }
+
+.new-block-control { display: inline-flex; align-items: center; justify-self: end; white-space: nowrap; gap: 4px; font-size: .84rem; font-weight: 600; }
+.new-block-control input { width: 18px; height: 18px; }
+.goal-entry { grid-template-columns: auto auto minmax(0,1fr) auto; }
+.progress-metrics { min-width: 0; }
+#blockCount { white-space: nowrap; }
+@media (max-width: 420px) {
+ .goal-entry { grid-template-columns: auto auto minmax(0,1fr) auto; column-gap: 4px; }
+ .new-block-control { font-size: .72rem; gap: 2px; }
+ .new-block-control input { width: 16px; height: 16px; }
+ .progress-metrics .metric { font-size: .76rem; }
+}

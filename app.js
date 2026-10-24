@@ -21,6 +21,8 @@
   const goalInput = document.getElementById('goal');
   const countDisplay = document.getElementById('count');
   const remainingDisplay = document.getElementById('remaining');
+  const blockCountDisplay = document.getElementById('blockCount');
+  const newBlockCheck = document.getElementById('newBlockCheck');
   const message = document.getElementById('message');
   const dateButton = document.getElementById('dateButton');
   const datePicker = document.getElementById('datePicker');
@@ -45,6 +47,7 @@
   let resetTimer = null;
   let currentDate = localDateString(new Date());
   let goal = 0;
+  let blockCount = 30;
   let saving = false;
   let elapsedSeconds = 0;
   let elapsedInterval = null;
@@ -110,6 +113,7 @@
       counts: [...counts],
       total: counts.reduce((sum, n) => sum + n, 0),
       time: elapsedSeconds,
+      blockCount,
       updatedAt: new Date().toISOString()
     };
     return new Promise((resolve, reject) => {
@@ -148,11 +152,15 @@
         counts = labels.map((_, i) => Number.isInteger(record.counts?.[i]) && record.counts[i] >= 0 ? record.counts[i] : 0);
         goal = Number.isInteger(record.goal) && record.goal >= 0 && record.goal <= 999 ? record.goal : 0;
         elapsedSeconds = Number.isInteger(record.time) && record.time >= 0 ? record.time : 0;
+        blockCount = Number.isInteger(record.blockCount) && record.blockCount >= 0 && record.blockCount <= 30 ? record.blockCount : 30;
       } else {
         counts = labels.map(() => 0);
         goal = 0;
         elapsedSeconds = 0;
+        blockCount = 30;
       }
+      blockCountDisplay.textContent = `Block Count: ${blockCount}`;
+      newBlockCheck.checked = true;
       goalInput.value = String(goal);
       renderRows();
       elapsedDisplay.textContent = formatElapsed(elapsedSeconds);
@@ -198,6 +206,7 @@
     const total = totalCount();
     countDisplay.textContent = `Count: ${total}`;
     remainingDisplay.textContent = `Remaining: ${Math.max(0, goal - total)}`;
+    blockCountDisplay.textContent = `Block Count: ${blockCount}`;
     goalInput.disabled = total > 0;
     updatePercentages();
     if (total >= goal) {
@@ -271,11 +280,15 @@
     document.querySelectorAll('input[name="outcome"]').forEach(el => {
       if (el !== radio) el.checked = false;
     });
+    newBlockCheck.checked = false;
     selectedIndex = index;
     lastCountIndex = index;
     lastCountWasRemoved = false;
     counts[index] += 1;
     const previousTotal = totalCount() - 1;
+    blockCount = Math.max(0, blockCount - 1);
+    blockCountDisplay.textContent = `Block Count: ${blockCount}`;
+    if (blockCount === 0) window.alert('The RoboCalls app says:\nGet a new block');
     const countElement = document.getElementById(`count-${index}`);
     countElement.textContent = String(counts[index]);
     countElement.classList.add('highlight');
@@ -293,6 +306,14 @@
       resetTimer = null;
     }, 2000);
   }
+
+  newBlockCheck.addEventListener('change', async () => {
+    if (newBlockCheck.checked) {
+      blockCount = 30;
+      blockCountDisplay.textContent = 'Block Count: 30';
+      await saveWithMessage();
+    }
+  });
 
   goalInput.addEventListener('input', () => {
     const n = Number(goalInput.value);
@@ -468,6 +489,7 @@
   backButton.addEventListener('click',()=>{listScreen.hidden=true;mainScreen.hidden=false;listButton.classList.remove('active');renderRows();});
   resetButton.addEventListener('click',()=>askConfirmation(async()=>{
     counts=labels.map(()=>0); selectedIndex=null; lastCountIndex=null; lastCountWasRemoved=false;
+    blockCount=30; blockCountDisplay.textContent='Block Count: 30'; newBlockCheck.checked=true;
     if(resetTimer)clearTimeout(resetTimer); resetTimer=null;
     document.querySelectorAll('input[name="outcome"]').forEach(el=>el.checked=false);
     resetStyling(); renderRows(); resetElapsedTimer(); await saveWithMessage();
