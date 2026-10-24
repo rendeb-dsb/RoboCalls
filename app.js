@@ -51,7 +51,7 @@
   let saving = false;
   let elapsedSeconds = 0;
   let elapsedInterval = null;
-  let timerStopped = false;
+  let timerStopped = true;
   let keepLit = false;
   let timerPaused = false;
   let wakeLock = null;
@@ -168,7 +168,9 @@
       if (elapsedInterval) clearInterval(elapsedInterval);
       elapsedInterval = null;
       message.textContent = '';
-      if (!timerPaused) startElapsedTimer();
+      timerStopped = true;
+      if (elapsedInterval) clearInterval(elapsedInterval);
+      elapsedInterval = null;
     } catch (error) {
       message.textContent = 'Could not load this day’s counts.';
       console.error(error);
@@ -281,6 +283,10 @@
       if (el !== radio) el.checked = false;
     });
     newBlockCheck.checked = false;
+    if (timerStopped && !timerPaused) {
+      timerStopped = false;
+      startElapsedTimer();
+    }
     selectedIndex = index;
     lastCountIndex = index;
     lastCountWasRemoved = false;
@@ -438,8 +444,8 @@
   }
   function resetElapsedTimer() {
     if(elapsedInterval) clearInterval(elapsedInterval);
-    elapsedInterval=null; elapsedSeconds=0; timerStopped=false;
-    elapsedDisplay.textContent='00:00:00'; startElapsedTimer();
+    elapsedInterval=null; elapsedSeconds=0; timerStopped=true;
+    elapsedDisplay.textContent='00:00:00';
   }
 
   pausedCheck.addEventListener('change', () => {
@@ -447,7 +453,7 @@
     if (timerPaused) {
       if (elapsedInterval) clearInterval(elapsedInterval);
       elapsedInterval = null;
-    } else {
+    } else if (!timerStopped) {
       startElapsedTimer();
     }
   });
