@@ -38,6 +38,9 @@
   const historyHead = document.getElementById('historyHead');
   const historyBody = document.getElementById('historyBody');
   const elapsedDisplay = document.getElementById('elapsed');
+  const exportButton = document.getElementById('exportButton');
+  const importButton = document.getElementById('importButton');
+  const importFile = document.getElementById('importFile');
 
   let db;
   let counts = labels.map(() => 0);
@@ -501,6 +504,134 @@
     resetStyling(); renderRows(); resetElapsedTimer(); await saveWithMessage();
     message.textContent='Counters reset.';
   }));
+
+
+  function getAllRecords() {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const request = tx.objectStore(STORE).getAll();
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  function isValidDateKey(value) {
+    return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+      !Number.isNaN(Date.parse(`${value}T12:00:00`)) &&
+      localDateString(new Date(`${value}T12:00:00`)) === value;
+  }
+
+  function validateImportPayload(payload) {
+    if (!payload || typeof payload !== 'object' || payload.format !== 'RoboCalls' ||
+        !Array.isArray(payload.records) || payload.records.length === 0) {
+      throw new Error('This file is not a valid RoboCalls backup.');
+    }
+    const seen = new Set();
+    const records = payload.records.map((r, index) => {
+      if (!r || typeof r !== 'object' || !isValidDateKey(r.date) || seen.has(r.date)) {
+        throw new Error(`Record ${index + 1} has a missing, invalid, or duplicate date.`);
+      }
+      seen.add(r.date);
+      if (!Number.isInteger(r.goal) || r.goal < 0 || r.goal > 999) {
+        throw new Error(`Record ${r.date} has an invalid Goal value.`);
+      }
+      if (!Array.isArray(r.counts) || r.counts.length !== labels.length ||
+          r.counts.some(n => !Number.isInteger(n) || n < 0)) {
+        throw new Error(`Record ${r.date} does not contain the expected ${labels.length} valid outcome counts.`);
+      }
+      const total = r.counts.reduce((sum, n) => sum + n, 0);
+      if (r.total !== undefined && (!Number.isInteger(r.total) || r.total !== total)) {
+        throw new Error(`Record ${r.date} has a Count total that does not match its outcome counts.`);
+      }
+      if (r.time !== undefined && (!Number.isInteger(r.time) || r.time < 0)) {
+        throw new Error(`Record ${r.date} has an invalid elapsed time.`);
+      }
+      if (r.blockCount !== undefined && (!Number.isInteger(r.blockCount) || r.blockCount < 0 || r.blockCount > 30)) {
+        throw new Error(`Record ${r.date} has an invalid Block Count.`);
+      }
+      return {
+        date: r.date,
+        goal: r.goal,
+        counts: [...r.counts],
+        total,
+        time: Number.isInteger(r.time) && r.time >= 0 ? r.time : 0,
+        blockCount: Number.isInteger(r.blockCount) && r.blockCount >= 0 && r.blockCount <= 30 ? r.blockCount : 30,
+        updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : new Date().toISOString()
+      };
+    });
+    return records;
+  }
+
+  exportButton.addEventListener('click', async () => {
+    try {
+      await saveWithMessage();
+      const records = await getAllRecords();
+      const backup = {
+        format: 'RoboCalls',
+        formatVersion: 1,
+        exportedAt: new Date().toISOString(),
+        records
+      };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `RoboCalls--${localDateString(new Date())}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      message.textContent = `Exported ${records.length} daily record(s). Check Downloads.`;
+    } catch (error) {
+      message.textContent = 'Export failed. Your saved records have not been changed.';
+      console.error(error);
+    }
+  });
+
+  importButton.addEventListener('click', () => {
+    importFile.value = '';
+    importFile.click();
+  });
+
+  importFile.addEventListener('change', async () => {
+    const file = importFile.files && importFile.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      let payload;
+      try { payload = JSON.parse(text); }
+      catch { throw new Error('The selected file is not valid JSON. Nothing was changed.'); }
+      // Fully validate and normalize the complete file before touching IndexedDB.
+      const records = validateImportPayload(payload);
+      const ok = window.confirm(
+        `Validated RoboCalls backup: ${records.length} daily record(s).\\n\\n` +
+        'Importing will REPLACE all RoboCalls daily records currently in this browser. ' +
+        'Export a backup first if you want to keep the current data. Continue?'
+      );
+      if (!ok) {
+        message.textContent = 'Import cancelled. Existing records were not changed.';
+        return;
+      }
+      // Clear and restore in one transaction so a failure aborts the replacement.
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite');
+        const store = tx.objectStore(STORE);
+        store.clear();
+        records.forEach(record => store.put(record));
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error || new Error('Import transaction failed.'));
+        tx.onabort = () => reject(tx.error || new Error('Import transaction was aborted.'));
+      });
+      await loadDay(currentDate);
+      if (listScreen && !listScreen.hidden) await buildHistoryTable();
+      message.textContent = `Import complete: restored ${records.length} daily record(s).`;
+    } catch (error) {
+      message.textContent = `Import rejected: ${error.message || 'file could not be read'}. Existing records were not changed.`;
+      console.error('RoboCalls import validation/restore error:', error);
+    } finally {
+      importFile.value = '';
+    }
+  });
 
   async function setKeepLit(enabled) {
     keepLit = enabled;
