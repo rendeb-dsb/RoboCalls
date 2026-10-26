@@ -162,3 +162,15 @@ input[type="radio"] { width: 22px; height: 22px; accent-color: #1769aa; cursor: 
   .data-buttons { gap: 3px; }
   .data-buttons button { padding: 4px 6px; font-size: .72rem; }
 }
+
+/* b1v4 goal progress and call-rate summary */
+.progress-dots { display: inline-flex; align-items: center; justify-content: center; gap: 2px; min-width: 0; }
+.progress-dot { appearance: none; -webkit-appearance: none; width: 10px; height: 10px; min-width: 10px; height: 10px; border: 1px solid #b00000; border-radius: 50%; background: #e00000; margin: 0; padding: 0; }
+.progress-dot.complete { border-color: #168a36; background: #168a36; }
+.rate-summary { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; font-size: .82rem; font-variant-numeric: tabular-nums; }
+.rate-summary span { white-space: nowrap; }
+@media (max-width: 420px) {
+  .progress-dots { gap: 1px; }
+  .progress-dot { width: 7px; min-width: 7px; height: 7px; }
+  .rate-summary { gap: 4px 9px; font-size: .72rem; }
+}

@@ -22,6 +22,7 @@
   const countDisplay = document.getElementById('count');
   const remainingDisplay = document.getElementById('remaining');
   const blockCountDisplay = document.getElementById('blockCount');
+  const progressDots = document.getElementById('progressDots');
   const newBlockCheck = document.getElementById('newBlockCheck');
   const message = document.getElementById('message');
   const dateButton = document.getElementById('dateButton');
@@ -51,6 +52,41 @@
   let currentDate = localDateString(new Date());
   let goal = 0;
   let blockCount = 30;
+
+  const progressDotInputs = [];
+  for (let i = 0; i < 10; i++) {
+    const dot = document.createElement('input');
+    dot.type = 'radio';
+    dot.disabled = true;
+    dot.className = 'progress-dot';
+    dot.setAttribute('aria-label', `${(i + 1) * 10}% of goal`);
+    progressDots.appendChild(dot);
+    progressDotInputs.push(dot);
+  }
+
+  function updateGoalProgressDots() {
+    const fraction = goal > 0 ? Math.min(1, totalCount() / goal) : 0;
+    const completed = Math.floor(fraction * 10 + 1e-9);
+    progressDotInputs.forEach((dot, i) => dot.classList.toggle('complete', i < completed));
+    progressDots.setAttribute('aria-label', `${completed} of 10 goal progress steps complete`);
+  }
+
+  function updateRateSummary() {
+    const seconds = Math.max(0, elapsedSeconds);
+    const total = totalCount();
+    const perSecond = seconds > 0 ? total / seconds : 0;
+    const rates = [
+      ['rateHour', perSecond * 3600],
+      ['rate15', perSecond * 900],
+      ['rate5', perSecond * 300],
+      ['rate1', perSecond * 60]
+    ];
+    rates.forEach(([id, value]) => {
+      const element = document.getElementById(id);
+      if (element) element.textContent = `${id === 'rateHour' ? 'Calls/hour' : id === 'rate15' ? 'Calls/15 min' : id === 'rate5' ? 'Calls/5 min' : 'Calls/min'}: ${value.toFixed(1)}`;
+    });
+  }
+
   let saving = false;
   let elapsedSeconds = 0;
   let elapsedInterval = null;
@@ -166,6 +202,8 @@
       newBlockCheck.checked = true;
       goalInput.value = String(goal);
       renderRows();
+      updateGoalProgressDots();
+      updateRateSummary();
       elapsedDisplay.textContent = formatElapsed(elapsedSeconds);
       timerStopped = false;
       if (elapsedInterval) clearInterval(elapsedInterval);
@@ -214,6 +252,8 @@
     blockCountDisplay.textContent = `Block Count: ${blockCount}`;
     goalInput.disabled = total > 0;
     updatePercentages();
+    updateGoalProgressDots();
+    updateRateSummary();
     if (total >= goal) {
       message.textContent = '';
       saveWithMessage();
@@ -392,6 +432,8 @@
     document.querySelectorAll('input[name="outcome"]').forEach(el => { el.checked = false; });
     resetStyling();
     counts[lastCountIndex] = Math.max(0, counts[lastCountIndex] - 1);
+    blockCount = Math.min(30, blockCount + 1);
+    blockCountDisplay.textContent = `Block Count: ${blockCount}`;
     const countElement = document.getElementById(`count-${lastCountIndex}`);
     countElement.textContent = String(counts[lastCountIndex]);
     countElement.classList.add('removed');
@@ -438,7 +480,11 @@
   }
   function startElapsedTimer() {
     if (elapsedInterval || timerStopped || timerPaused) return;
-    elapsedInterval=setInterval(()=>{ elapsedSeconds++; elapsedDisplay.textContent=formatElapsed(elapsedSeconds); },1000);
+    elapsedInterval=setInterval(()=>{
+      elapsedSeconds++;
+      elapsedDisplay.textContent=formatElapsed(elapsedSeconds);
+      updateRateSummary();
+    },1000);
   }
   function stopElapsedTimer() {
     timerStopped=true;
@@ -449,6 +495,7 @@
     if(elapsedInterval) clearInterval(elapsedInterval);
     elapsedInterval=null; elapsedSeconds=0; timerStopped=true;
     elapsedDisplay.textContent='00:00:00';
+    updateRateSummary();
   }
 
   pausedCheck.addEventListener('change', () => {
