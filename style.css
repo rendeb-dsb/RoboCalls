@@ -190,3 +190,16 @@ input[type="radio"] { width: 22px; height: 22px; accent-color: #1769aa; cursor: 
     border-width: 0.5px;
   }
 }
+
+/* b1v6: override the general 22px radio-button rule for the read-only goal dots. */
+input[type="radio"].progress-dot {
+  width: 5.5px !important;
+  min-width: 5.5px !important;
+  height: 5.5px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-width: 0.5px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  cursor: default !important;
+}
