@@ -372,3 +372,34 @@ input[type="radio"].progress-dot {
   .goal-entry > .block-controls #blockCount { font-size: 8.5px !important; }
   .goal-entry > .progress-metrics .metric { font-size: 9px !important; }
 }
+
+/* b1v10: cache-busted stylesheet and compact one-line goal layout. */
+.goal-entry {
+  display: grid !important;
+  grid-template-columns: 52px 56px minmax(88px, 1fr) 62px 100px !important;
+  gap: 3px !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  flex-wrap: nowrap !important;
+}
+.goal-entry > label[for="goal"] { grid-column: 1 !important; grid-row: 1 !important; white-space: nowrap !important; }
+.goal-entry > #goal { grid-column: 2 !important; grid-row: 1 !important; width: 56px !important; }
+.goal-entry > .progress-metrics { grid-column: 3 !important; grid-row: 1 !important; min-width: 0 !important; }
+.goal-entry > .progress-metrics .metric { font-size: 10px !important; line-height: 1.25 !important; white-space: nowrap !important; }
+.goal-entry > .progress-dots { grid-column: 4 !important; grid-row: 1 !important; width: 62px !important; min-width: 0 !important; display: flex !important; justify-content: center !important; gap: 0 !important; }
+.goal-entry > .progress-dots input[type="radio"].progress-dot { width: 5.5px !important; min-width: 5.5px !important; height: 5.5px !important; flex: 0 0 5.5px !important; margin: 0 !important; padding: 0 !important; }
+.goal-entry > .block-controls { grid-column: 5 !important; grid-row: 1 !important; width: 100px !important; min-width: 0 !important; display: flex !important; flex-direction: column !important; align-items: flex-end !important; justify-self: end !important; gap: 3px !important; margin: 0 !important; }
+.goal-entry > .block-controls .new-block-control { display: flex !important; flex-direction: row !important; justify-content: flex-end !important; align-items: center !important; gap: 2px !important; width: 100% !important; white-space: nowrap !important; font-size: 10px !important; line-height: 1.1 !important; }
+.goal-entry > .block-controls .new-block-control input { width: 13px !important; min-width: 13px !important; height: 13px !important; flex: 0 0 13px !important; margin: 0 !important; }
+.goal-entry > .block-controls #blockCount { display: block !important; width: 100% !important; text-align: right !important; white-space: nowrap !important; font-size: 10px !important; line-height: 1.1 !important; }
+@media (max-width: 380px) {
+  .goal-entry { grid-template-columns: 49px 48px minmax(76px, 1fr) 54px 88px !important; gap: 2px !important; }
+  .goal-entry > #goal { width: 48px !important; }
+  .goal-entry > .progress-dots { width: 54px !important; }
+  .goal-entry > .block-controls { width: 88px !important; }
+  .goal-entry > .progress-metrics .metric { font-size: 9px !important; }
+  .goal-entry > .block-controls .new-block-control,
+  .goal-entry > .block-controls #blockCount { font-size: 8.5px !important; }
+}
