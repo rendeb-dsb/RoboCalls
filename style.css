@@ -203,3 +203,33 @@ input[type="radio"].progress-dot {
   -webkit-appearance: none !important;
   cursor: default !important;
 }
+
+/* b1v7: keep Goal, Count/Remaining, progress dots, and New Block/Block Count on one row. */
+.goal-entry {
+  display: grid !important;
+  grid-template-columns: auto 59px minmax(94px, 1fr) 94px minmax(112px, auto) !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex-wrap: nowrap !important;
+}
+.goal-entry > label[for="goal"] { grid-column: 1; }
+#goal { grid-column: 2; width: 59px; min-width: 0; }
+.progress-metrics { grid-column: 3; min-width: 0; }
+.progress-metrics .metric { white-space: nowrap; }
+.progress-dots { grid-column: 4; justify-self: center; gap: 1px; }
+.block-controls { grid-column: 5; min-width: 0; justify-self: end; align-items: flex-end; }
+.new-block-control { white-space: nowrap; }
+#blockCount { white-space: nowrap; }
+@media (max-width: 420px) {
+  .goal-entry {
+    grid-template-columns: auto 56px minmax(90px, 1fr) 84px minmax(104px, auto) !important;
+    gap: 3px !important;
+  }
+  #goal { width: 56px; padding-left: 5px; padding-right: 4px; }
+  .progress-metrics .metric { font-size: .70rem !important; }
+  .progress-dots { gap: 0; }
+  input[type="radio"].progress-dot { width: 5.5px !important; min-width: 5.5px !important; height: 5.5px !important; }
+  .new-block-control { font-size: .70rem !important; gap: 2px; }
+  .new-block-control input { width: 14px; height: 14px; }
+  #blockCount { font-size: .70rem !important; }
+}
