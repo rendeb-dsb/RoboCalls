@@ -233,3 +233,36 @@ input[type="radio"].progress-dot {
   .new-block-control input { width: 14px; height: 14px; }
   #blockCount { font-size: .70rem !important; }
 }
+
+/* b1v8: compact five-column layout so Block controls remain on the same row. */
+.goal-entry {
+  display: grid !important;
+  grid-template-columns: auto 56px minmax(78px, 1fr) 60px 94px !important;
+  align-items: center !important;
+  column-gap: 3px !important;
+  row-gap: 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.goal-entry > label[for="goal"] { grid-column: 1; white-space: nowrap; }
+.goal-entry > #goal { grid-column: 2; width: 56px; min-width: 0; }
+.goal-entry > .progress-metrics { grid-column: 3; min-width: 0; }
+.goal-entry > .progress-dots { grid-column: 4; justify-self: center; min-width: 0; width: 60px; gap: 0; }
+.goal-entry > .block-controls { grid-column: 5; justify-self: end; min-width: 0; width: 94px; }
+.goal-entry > .block-controls .new-block-control { font-size: .66rem !important; line-height: 1.15; gap: 2px; }
+.goal-entry > .block-controls .new-block-control input { width: 13px; height: 13px; flex: 0 0 13px; }
+.goal-entry > .block-controls #blockCount { font-size: .66rem !important; line-height: 1.15; }
+.goal-entry > .progress-metrics .metric { font-size: .68rem !important; line-height: 1.25; white-space: nowrap; }
+.goal-entry > .progress-dots input[type="radio"].progress-dot { width: 5.5px !important; min-width: 5.5px !important; height: 5.5px !important; flex: 0 0 5.5px; }
+@media (max-width: 380px) {
+  .goal-entry {
+    grid-template-columns: auto 49px minmax(70px, 1fr) 54px 88px !important;
+    column-gap: 2px !important;
+  }
+  .goal-entry > #goal { width: 49px; padding-left: 4px; padding-right: 2px; }
+  .goal-entry > .progress-dots { width: 54px; }
+  .goal-entry > .block-controls { width: 88px; }
+  .goal-entry > .block-controls .new-block-control,
+  .goal-entry > .block-controls #blockCount { font-size: .60rem !important; }
+  .goal-entry > .progress-metrics .metric { font-size: .62rem !important; }
+}
