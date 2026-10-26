@@ -250,7 +250,7 @@
     countDisplay.textContent = `Count: ${total}`;
     remainingDisplay.textContent = `Remaining: ${Math.max(0, goal - total)}`;
     blockCountDisplay.textContent = `Block Count: ${blockCount}`;
-    goalInput.disabled = total > 0;
+    goalInput.disabled = false;
     updatePercentages();
     updateGoalProgressDots();
     updateRateSummary();

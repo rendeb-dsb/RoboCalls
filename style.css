@@ -403,3 +403,6 @@ input[type="radio"].progress-dot {
   .goal-entry > .block-controls .new-block-control,
   .goal-entry > .block-controls #blockCount { font-size: 8.5px !important; }
 }
+
+/* b1v11: rates appear immediately above the action buttons. */
+.rate-summary { margin-top: 6px; margin-bottom: 6px; }
