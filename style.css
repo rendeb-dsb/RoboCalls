@@ -432,3 +432,33 @@ input[type="radio"].progress-dot {
   }
 }
 .rate-summary { flex-wrap: wrap; }
+
+
+/* b1v13: consistent Goal-row typography, left-shifted Goal input, and named Progression display. */
+.goal-entry > label[for="goal"],
+.goal-entry > .progress-metrics .metric,
+.goal-entry > .block-controls .new-block-control,
+.goal-entry > .block-controls #blockCount,
+.goal-entry > #goal {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+}
+.goal-entry > #goal {
+  transform: translateX(-15px) !important;
+}
+.progress-dot.complete {
+  border-color: #168a36 !important;
+  background: #168a36 !important;
+}
+.progress-dot.over-blue {
+  border-color: #1565c0 !important;
+  background: #1565c0 !important;
+}
+.progress-dot.over-yellow {
+  border-color: #d4a900 !important;
+  background: #ffdf00 !important;
+}
+.progress-dot.over-black {
+  border-color: #000000 !important;
+  background: #000000 !important;
+}
