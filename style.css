@@ -462,3 +462,18 @@ input[type="radio"].progress-dot {
   border-color: #000000 !important;
   background: #000000 !important;
 }
+
+
+/* b1v14: shift metrics and Progression left; right-align estimated completion. */
+.goal-entry > .progress-metrics {
+  transform: translateX(-15px) !important;
+}
+.goal-entry > .progress-dots {
+  transform: translateX(-15px) !important;
+}
+#rateDone {
+  display: block !important;
+  width: 100% !important;
+  text-align: right !important;
+  margin-left: auto !important;
+}
