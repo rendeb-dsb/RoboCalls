@@ -477,3 +477,29 @@ input[type="radio"].progress-dot {
   text-align: right !important;
   margin-left: auto !important;
 }
+
+
+/* b1v15: keep estimated completion inline and right-aligned; refine row positions. */
+.goal-entry > .progress-metrics {
+  transform: translateX(-23px) !important;
+}
+.goal-entry > .progress-dots {
+  transform: translateX(-30px) !important;
+}
+.rate-summary {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  gap: 8px !important;
+}
+#rateDone {
+  display: inline-block !important;
+  width: auto !important;
+  min-width: max-content !important;
+  text-align: right !important;
+  margin-left: auto !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+}
