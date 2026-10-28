@@ -36,3 +36,6 @@ To use with GitHub Pages:
 - Goal edits no longer clear counters; use Reset to clear counters.
 - Elapsed time displays as hh:mm:ss beside the title and stops at Goal reached or Done.
 - List shows outcomes by row and saved dates by column; Radio and Outcome columns are sticky. Back returns to the main screen.
+
+
+b1v16: Added the Voice mail Direct outcome directly below Voice mail left. Existing saved records are migrated to include a zero count for the new outcome; older JSON backups remain importable, and new exports include the new category count.

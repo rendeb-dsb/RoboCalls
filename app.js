@@ -2,10 +2,11 @@
   'use strict';
 
   const DB_NAME = 'RoboCallsDB';
-  const DB_VERSION = 4;
+  const DB_VERSION = 5;
   const STORE = 'dailyRecords';
   const labels = [
     'Voice mail left',
+    'Voice mail Direct',
     'Offline',
     'Mailbox full',
     'Mailbox not set up',
@@ -159,6 +160,23 @@
             const record = cursor.value;
             if (Array.isArray(record.counts) && record.counts.length >= 11) {
               record.counts.splice(8, 1);
+              record.total = record.counts.reduce((sum, n) => sum + (Number(n) || 0), 0);
+              cursor.update(record);
+            }
+            cursor.continue();
+          };
+        }
+        // b1v16: add Voice mail Direct after Voice mail left without changing existing counts.
+        if (event.oldVersion >= 3 && event.oldVersion < 5 &&
+            database.objectStoreNames.contains(STORE)) {
+          const store = request.transaction.objectStore(STORE);
+          const cursorRequest = store.openCursor();
+          cursorRequest.onsuccess = () => {
+            const cursor = cursorRequest.result;
+            if (!cursor) return;
+            const record = cursor.value;
+            if (Array.isArray(record.counts) && record.counts.length === 10) {
+              record.counts.splice(1, 0, 0);
               record.total = record.counts.reduce((sum, n) => sum + (Number(n) || 0), 0);
               cursor.update(record);
             }
@@ -617,10 +635,14 @@
       if (!Number.isInteger(r.goal) || r.goal < 0 || r.goal > 999) {
         throw new Error(`Record ${r.date} has an invalid Goal value.`);
       }
-      if (!Array.isArray(r.counts) || r.counts.length !== labels.length ||
+      if (!Array.isArray(r.counts) ||
+          (r.counts.length !== labels.length && r.counts.length !== labels.length - 1) ||
           r.counts.some(n => !Number.isInteger(n) || n < 0)) {
-        throw new Error(`Record ${r.date} does not contain the expected ${labels.length} valid outcome counts.`);
+        throw new Error(`Record ${r.date} does not contain the expected valid outcome counts.`);
       }
+      // Backward compatibility: older backups have no Voice mail Direct count.
+      const normalizedCounts = [...r.counts];
+      if (normalizedCounts.length === labels.length - 1) normalizedCounts.splice(1, 0, 0);
       const total = r.counts.reduce((sum, n) => sum + n, 0);
       if (r.total !== undefined && (!Number.isInteger(r.total) || r.total !== total)) {
         throw new Error(`Record ${r.date} has a Count total that does not match its outcome counts.`);
@@ -634,7 +656,7 @@
       return {
         date: r.date,
         goal: r.goal,
-        counts: [...r.counts],
+        counts: normalizedCounts,
         total,
         time: Number.isInteger(r.time) && r.time >= 0 ? r.time : 0,
         blockCount: Number.isInteger(r.blockCount) && r.blockCount >= 0 && r.blockCount <= 30 ? r.blockCount : 30,
