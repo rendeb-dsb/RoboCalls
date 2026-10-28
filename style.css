@@ -406,3 +406,29 @@ input[type="radio"].progress-dot {
 
 /* b1v11: rates appear immediately above the action buttons. */
 .rate-summary { margin-top: 6px; margin-bottom: 6px; }
+
+/* b1v12 requested typography and smaller Goal entry field. */
+.goal-entry > label[for="goal"],
+.goal-entry > .progress-metrics .metric,
+.goal-entry > .block-controls .new-block-control,
+.goal-entry > .block-controls #blockCount {
+  font-size: 10px !important;
+  font-weight: 400 !important;
+}
+.metric { font-weight: 400 !important; }
+.goal-entry > #goal {
+  width: 32px !important;
+  min-height: 25px !important;
+  height: 25px !important;
+  padding: 2px 3px !important;
+  font-size: 10px !important;
+  box-sizing: border-box !important;
+}
+@media (max-width: 380px) {
+  .goal-entry > #goal {
+    width: 32px !important;
+    min-height: 25px !important;
+    height: 25px !important;
+  }
+}
+.rate-summary { flex-wrap: wrap; }

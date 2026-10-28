@@ -76,15 +76,28 @@
     const total = totalCount();
     const perSecond = seconds > 0 ? total / seconds : 0;
     const rates = [
-      ['rateHour', perSecond * 3600],
-      ['rate15', perSecond * 900],
-      ['rate5', perSecond * 300],
-      ['rate1', perSecond * 60]
+      ['rateHour', 'Calls/hour', perSecond * 3600],
+      ['rate15', '15 min', perSecond * 900],
+      ['rate5', '5 min', perSecond * 300],
+      ['rate1', 'min', perSecond * 60]
     ];
-    rates.forEach(([id, value]) => {
+    rates.forEach(([id, label, value]) => {
       const element = document.getElementById(id);
-      if (element) element.textContent = `${id === 'rateHour' ? 'Calls/hour' : id === 'rate15' ? 'Calls/15 min' : id === 'rate5' ? 'Calls/5 min' : 'Calls/min'}: ${value.toFixed(1)}`;
+      if (element) element.textContent = `${label}: ${value.toFixed(1)}`;
     });
+    const done = document.getElementById('rateDone');
+    if (done) {
+      const remaining = Math.max(0, goal - total);
+      if (remaining === 0 && total > 0) {
+        const now = new Date();
+        done.textContent = `Est. Done: ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      } else if (perSecond > 0 && remaining > 0) {
+        const finish = new Date(Date.now() + (remaining / perSecond) * 1000);
+        done.textContent = `Est. Done: ${String(finish.getHours()).padStart(2, '0')}:${String(finish.getMinutes()).padStart(2, '0')}`;
+      } else {
+        done.textContent = 'Est. Done: --:--';
+      }
+    }
   }
 
   let saving = false;
