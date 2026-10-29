@@ -2,7 +2,7 @@
   'use strict';
 
   const DB_NAME = 'RoboCallsDB';
-  const DB_VERSION = 5;
+  const DB_VERSION = 6;
   const STORE = 'dailyRecords';
   const labels = [
     'Voice mail left',
@@ -13,7 +13,8 @@
     'Challenge call',
     'No robocalls',
     'Moved',
-    'Skip',
+    'Silence',
+    'Dummy',
     'Spoke full message',
     'Refused - Hung up'
   ];
@@ -113,10 +114,10 @@
       const remaining = Math.max(0, goal - total);
       if (remaining === 0 && total > 0) {
         const now = new Date();
-        done.textContent = `Est. Done: ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        done.textContent = `Est. Done: ${now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}`;
       } else if (perSecond > 0 && remaining > 0) {
         const finish = new Date(Date.now() + (remaining / perSecond) * 1000);
-        done.textContent = `Est. Done: ${String(finish.getHours()).padStart(2, '0')}:${String(finish.getMinutes()).padStart(2, '0')}`;
+        done.textContent = `Est. Done: ${finish.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}`;
       } else {
         done.textContent = 'Est. Done: --:--';
       }
@@ -177,6 +178,23 @@
             const record = cursor.value;
             if (Array.isArray(record.counts) && record.counts.length === 10) {
               record.counts.splice(1, 0, 0);
+              record.total = record.counts.reduce((sum, n) => sum + (Number(n) || 0), 0);
+              cursor.update(record);
+            }
+            cursor.continue();
+          };
+        }
+        // b1v17: add Dummy before Spoke full message, preserving existing counts.
+        if (event.oldVersion >= 5 && event.oldVersion < 6 &&
+            database.objectStoreNames.contains(STORE)) {
+          const store = request.transaction.objectStore(STORE);
+          const cursorRequest = store.openCursor();
+          cursorRequest.onsuccess = () => {
+            const cursor = cursorRequest.result;
+            if (!cursor) return;
+            const record = cursor.value;
+            if (Array.isArray(record.counts) && record.counts.length === 11) {
+              record.counts.splice(9, 0, 0);
               record.total = record.counts.reduce((sum, n) => sum + (Number(n) || 0), 0);
               cursor.update(record);
             }
@@ -636,13 +654,15 @@
         throw new Error(`Record ${r.date} has an invalid Goal value.`);
       }
       if (!Array.isArray(r.counts) ||
-          (r.counts.length !== labels.length && r.counts.length !== labels.length - 1) ||
+          ![10, 11, labels.length].includes(r.counts.length) ||
           r.counts.some(n => !Number.isInteger(n) || n < 0)) {
         throw new Error(`Record ${r.date} does not contain the expected valid outcome counts.`);
       }
-      // Backward compatibility: older backups have no Voice mail Direct count.
+      // Backward compatibility for older JSON exports:
+      // 10 entries = before Voice mail Direct; 11 entries = before Dummy.
       const normalizedCounts = [...r.counts];
-      if (normalizedCounts.length === labels.length - 1) normalizedCounts.splice(1, 0, 0);
+      if (normalizedCounts.length === 10) normalizedCounts.splice(1, 0, 0);
+      if (normalizedCounts.length === 11) normalizedCounts.splice(9, 0, 0);
       const total = r.counts.reduce((sum, n) => sum + n, 0);
       if (r.total !== undefined && (!Number.isInteger(r.total) || r.total !== total)) {
         throw new Error(`Record ${r.date} has a Count total that does not match its outcome counts.`);

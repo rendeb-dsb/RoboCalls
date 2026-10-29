@@ -39,3 +39,6 @@ To use with GitHub Pages:
 
 
 b1v16: Added the Voice mail Direct outcome directly below Voice mail left. Existing saved records are migrated to include a zero count for the new outcome; older JSON backups remain importable, and new exports include the new category count.
+
+
+b1v17: Renamed the Skip outcome to Silence; added the Dummy outcome before Spoke full message. IndexedDB upgrades preserve previous counts and initialize the new Dummy count to zero. JSON import supports older 10- and 11-category backups and normalizes them to the current 12-category layout. New JSON exports include all 12 outcome counts. Est. Done uses 12-hour time with AM/PM.
