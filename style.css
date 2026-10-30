@@ -552,3 +552,16 @@ input[type="radio"].progress-dot {
     min-width: 105px !important;
   }
 }
+
+
+/* b1v19 requested refinements. */
+.goal-entry > .progress-dots {
+  transform: translateX(-15px) !important;
+}
+#backButton {
+  background: #dbeafe !important;
+  border-color: #2563eb !important;
+}
+.rate-summary > span:not(#rateDone) {
+  margin-right: 5px !important;
+}

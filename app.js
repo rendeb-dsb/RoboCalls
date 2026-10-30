@@ -453,10 +453,6 @@
       goalInput.setCustomValidity('');
       goal = goalInput.value === '' ? 0 : n;
       updateProgress();
-      if (totalCount() < goal && !timerPaused && !elapsedInterval) {
-        timerStopped = false;
-        startElapsedTimer();
-      }
     }
   });
 
@@ -465,10 +461,6 @@
     goalInput.value = String(goal);
     goalInput.setCustomValidity('');
     updateProgress();
-    if (totalCount() < goal && !timerPaused && !elapsedInterval) {
-      timerStopped = false;
-      startElapsedTimer();
-    }
   });
 
   const confirmDialog = document.getElementById('confirmDialog');
@@ -806,6 +798,8 @@
     try {
       await openDatabase();
       await loadDay(currentDate);
+      keepLitCheck.checked = true;
+      await setKeepLit(true);
     } catch (error) {
       message.textContent = 'IndexedDB is unavailable. Please open this app in a supported browser.';
       console.error(error);

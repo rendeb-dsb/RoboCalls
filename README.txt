@@ -45,3 +45,6 @@ b1v17: Renamed the Skip outcome to Silence; added the Dummy outcome before Spoke
 
 
 b1v18: Progression overflow color after green is pink (followed by yellow and black). Overflow indicators change only after each complete additional 10% of Goal. Added actual percentage complete beside the ten indicators. Increased each indicator diameter by 2px. Outcome radio selection auto-reset delay is now 4 seconds.
+
+
+b1v19: Shifted Progression 15px right. Setting Goal no longer starts elapsed timer; timer still starts on first outcome selection. Back button now uses the same default light-blue styling as List. Keep Lit is checked and wake-lock request is activated at startup. Added 5px right spacing after the Calls/time rate elements.
