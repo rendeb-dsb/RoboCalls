@@ -65,29 +65,39 @@
     progressDots.appendChild(dot);
     progressDotInputs.push(dot);
   }
+  const progressionPercent = document.createElement('span');
+  progressionPercent.id = 'progressionPercent';
+  progressionPercent.className = 'progression-percent';
+  progressionPercent.textContent = '0%';
+  progressionPercent.setAttribute('aria-label', '0 percent of goal');
+  progressDots.appendChild(progressionPercent);
 
   function updateGoalProgressDots() {
     const total = totalCount();
-    const fraction = goal > 0 ? total / goal : 0;
-    const completed = goal > 0 ? Math.min(10, Math.floor(fraction * 10 + 1e-9)) : 0;
+    const percent = goal > 0 ? Math.round((total / goal) * 100) : 0;
+    const completed = goal > 0 ? Math.min(10, Math.floor((total / goal) * 10 + 1e-9)) : 0;
+    // Overflow advances only after each complete additional 10% of the goal.
+    // A small epsilon avoids floating-point errors at exact 10% boundaries.
     const overGoalSteps = goal > 0 && total > goal
-      ? Math.ceil(((total - goal) / goal) * 10 - 1e-9)
+      ? Math.min(30, Math.floor(((total - goal) / goal) * 10 + 1e-9))
       : 0;
-    const overColor = overGoalSteps <= 10 ? 'over-blue'
+    const overColor = overGoalSteps <= 10 ? 'over-pink'
       : overGoalSteps <= 20 ? 'over-yellow' : 'over-black';
+
     progressDotInputs.forEach((dot, i) => {
-      dot.classList.remove('complete', 'over-blue', 'over-yellow', 'over-black');
+      dot.classList.remove('complete', 'over-pink', 'over-yellow', 'over-black');
       if (goal <= 0 || total <= goal) {
         if (i < completed) dot.classList.add('complete');
       } else {
-        // Once the goal is reached, all dots are green. Each additional 10% of goal
-        // changes one dot to the next overflow color; after 100% over goal, all
-        // dots use that color, then the palette advances to yellow and black.
-        const coloredDots = Math.min(10, overGoalSteps);
-        if (i < coloredDots) dot.classList.add(overColor);
+        // Keep all ten green until the first full 10% beyond Goal.
+        // Then recolor one dot per additional 10% step.
+        if (i < Math.min(10, overGoalSteps)) dot.classList.add(overColor);
         else dot.classList.add('complete');
       }
     });
+
+    progressionPercent.textContent = `${percent}%`;
+    progressionPercent.setAttribute('aria-label', `${percent} percent of goal`);
     const label = goal <= 0 || total <= goal
       ? `Progression: ${completed} of 10 goal progress steps complete`
       : `Progression: goal exceeded by ${total - goal}; ${overGoalSteps} overflow steps`;
@@ -95,7 +105,7 @@
     progressDots.setAttribute('title', 'Progression');
   }
 
-  function updateRateSummary() {
+    function updateRateSummary() {
     const seconds = Math.max(0, elapsedSeconds);
     const total = totalCount();
     const perSecond = seconds > 0 ? total / seconds : 0;
@@ -424,7 +434,7 @@
       radio.checked = false;
       selectedIndex = null;
       resetTimer = null;
-    }, 2000);
+    }, 4000);
   }
 
   newBlockCheck.addEventListener('change', async () => {

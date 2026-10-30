@@ -503,3 +503,52 @@ input[type="radio"].progress-dot {
   white-space: nowrap !important;
   flex: 0 0 auto !important;
 }
+
+
+/* b1v18: larger Progression indicators, percentage readout, and overflow colors. */
+.goal-entry {
+  grid-template-columns: 52px 56px minmax(68px, 1fr) 110px 100px !important;
+}
+.goal-entry > .progress-dots {
+  width: 110px !important;
+  min-width: 110px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 1px !important;
+}
+.goal-entry > .progress-dots input[type="radio"].progress-dot {
+  width: 7.5px !important;
+  min-width: 7.5px !important;
+  height: 7.5px !important;
+  flex: 0 0 7.5px !important;
+}
+.progression-percent {
+  display: inline-block !important;
+  margin-left: 3px !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  font-weight: 400 !important;
+  white-space: nowrap !important;
+}
+.progress-dot.over-pink {
+  border-color: #e91e8f !important;
+  background: #ff69b4 !important;
+}
+.progress-dot.over-yellow {
+  border-color: #d4a900 !important;
+  background: #ffdf00 !important;
+}
+.progress-dot.over-black {
+  border-color: #000000 !important;
+  background: #000000 !important;
+}
+@media (max-width: 380px) {
+  .goal-entry {
+    grid-template-columns: 49px 48px minmax(45px, 1fr) 105px 88px !important;
+  }
+  .goal-entry > .progress-dots {
+    width: 105px !important;
+    min-width: 105px !important;
+  }
+}

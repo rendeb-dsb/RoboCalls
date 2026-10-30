@@ -42,3 +42,6 @@ b1v16: Added the Voice mail Direct outcome directly below Voice mail left. Exist
 
 
 b1v17: Renamed the Skip outcome to Silence; added the Dummy outcome before Spoke full message. IndexedDB upgrades preserve previous counts and initialize the new Dummy count to zero. JSON import supports older 10- and 11-category backups and normalizes them to the current 12-category layout. New JSON exports include all 12 outcome counts. Est. Done uses 12-hour time with AM/PM.
+
+
+b1v18: Progression overflow color after green is pink (followed by yellow and black). Overflow indicators change only after each complete additional 10% of Goal. Added actual percentage complete beside the ten indicators. Increased each indicator diameter by 2px. Outcome radio selection auto-reset delay is now 4 seconds.
