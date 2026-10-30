@@ -565,3 +565,9 @@ input[type="radio"].progress-dot {
 .rate-summary > span:not(#rateDone) {
   margin-right: 5px !important;
 }
+
+
+/* b1v20: move Progression an additional 10px to the right. */
+.goal-entry > .progress-dots {
+  transform: translateX(-5px) !important;
+}

@@ -48,3 +48,6 @@ b1v18: Progression overflow color after green is pink (followed by yellow and bl
 
 
 b1v19: Shifted Progression 15px right. Setting Goal no longer starts elapsed timer; timer still starts on first outcome selection. Back button now uses the same default light-blue styling as List. Keep Lit is checked and wake-lock request is activated at startup. Added 5px right spacing after the Calls/time rate elements.
+
+
+b1v20: Moved the Progression control an additional 10px to the right compared with b1v19.
