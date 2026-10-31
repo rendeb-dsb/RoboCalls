@@ -74,7 +74,7 @@
 
   function updateGoalProgressDots() {
     const total = totalCount();
-    const percent = goal > 0 ? Math.round((total / goal) * 100) : 0;
+    const percent = goal > 0 ? Math.trunc((total / goal) * 100) : 0;
     const completed = goal > 0 ? Math.min(10, Math.floor((total / goal) * 10 + 1e-9)) : 0;
     // Overflow advances only after each complete additional 10% of the goal.
     // A small epsilon avoids floating-point errors at exact 10% boundaries.

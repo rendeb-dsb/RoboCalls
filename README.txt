@@ -51,3 +51,6 @@ b1v19: Shifted Progression 15px right. Setting Goal no longer starts elapsed tim
 
 
 b1v20: Moved the Progression control an additional 10px to the right compared with b1v19.
+
+
+b1v21: Progression percentage now truncates fractional values instead of rounding. Shifted the Progression radio indicators and percentage readout 5px to the right.
