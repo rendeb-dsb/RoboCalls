@@ -54,3 +54,6 @@ b1v20: Moved the Progression control an additional 10px to the right compared wi
 
 
 b1v21: Progression percentage now truncates fractional values instead of rounding. Shifted the Progression radio indicators and percentage readout 5px to the right.
+
+
+b1v22: Replaced the Export and Import buttons on the main screen with Settings. Export and Import are now on the Settings page. Added the Campaigns table with auto-generated CampaignId, Active, Name, Year, and Type fields; added campaign entry and active-campaign selection. Existing daily records are preserved during the IndexedDB upgrade.

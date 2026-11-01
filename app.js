@@ -2,8 +2,9 @@
   'use strict';
 
   const DB_NAME = 'RoboCallsDB';
-  const DB_VERSION = 6;
+  const DB_VERSION = 7;
   const STORE = 'dailyRecords';
+  const CAMPAIGN_STORE = 'campaigns';
   const labels = [
     'Voice mail left',
     'Voice mail Direct',
@@ -44,6 +45,14 @@
   const exportButton = document.getElementById('exportButton');
   const importButton = document.getElementById('importButton');
   const importFile = document.getElementById('importFile');
+  const settingsButton = document.getElementById('settingsButton');
+  const settingsScreen = document.getElementById('settingsScreen');
+  const goalPanel = document.querySelector('.goal-panel');
+  const campaignNameInput = document.getElementById('campaignName');
+  const campaignYearInput = document.getElementById('campaignYear');
+  const campaignTypeInput = document.getElementById('campaignType');
+  const addCampaignButton = document.getElementById('addCampaignButton');
+  const campaignRows = document.getElementById('campaignRows');
 
   let db;
   let counts = labels.map(() => 0);
@@ -160,6 +169,11 @@
       const request = indexedDB.open(DB_NAME, DB_VERSION);
       request.onupgradeneeded = (event) => {
         const database = request.result;
+        // b1v22: Campaigns table with an auto-incrementing primary key.
+        if (!database.objectStoreNames.contains(CAMPAIGN_STORE)) {
+          const campaignStore = database.createObjectStore(CAMPAIGN_STORE, { keyPath: 'CampaignId', autoIncrement: true });
+          campaignStore.createIndex('Active', 'Active', { unique: false });
+        }
         if (!database.objectStoreNames.contains(STORE)) {
           database.createObjectStore(STORE, { keyPath: 'date' });
         } else if (event.oldVersion < 3) {
@@ -614,8 +628,8 @@
       historyBody.appendChild(tr);
     });
   }
-  listButton.addEventListener('click',async()=>{mainScreen.hidden=true;listScreen.hidden=false;listButton.classList.add('active');await buildHistoryTable();});
-  backButton.addEventListener('click',()=>{listScreen.hidden=true;mainScreen.hidden=false;listButton.classList.remove('active');renderRows();});
+  listButton.addEventListener('click',async()=>{settingsScreen.hidden=true;goalPanel.hidden=false;message.hidden=false;mainScreen.hidden=true;listScreen.hidden=false;settingsButton.textContent='Settings';listButton.classList.add('active');await buildHistoryTable();});
+  backButton.addEventListener('click',()=>{listScreen.hidden=true;mainScreen.hidden=false;goalPanel.hidden=false;settingsScreen.hidden=true;settingsButton.textContent='Settings';listButton.classList.remove('active');renderRows();});
   resetButton.addEventListener('click',()=>askConfirmation(async()=>{
     counts=labels.map(()=>0); selectedIndex=null; lastCountIndex=null; lastCountWasRemoved=false;
     blockCount=30; blockCountDisplay.textContent='Block Count: 30'; newBlockCheck.checked=true;
@@ -687,6 +701,125 @@
     });
     return records;
   }
+
+
+  function showSettings() {
+    mainScreen.hidden = true;
+    listScreen.hidden = true;
+    goalPanel.hidden = true;
+    message.hidden = true;
+    settingsScreen.hidden = false;
+    settingsButton.textContent = 'Back';
+    settingsButton.setAttribute('aria-label', 'Return to main screen');
+    renderCampaigns();
+  }
+
+  function hideSettings() {
+    settingsScreen.hidden = true;
+    goalPanel.hidden = false;
+    mainScreen.hidden = false;
+    listScreen.hidden = true;
+    message.hidden = false;
+    settingsButton.textContent = 'Settings';
+    settingsButton.setAttribute('aria-label', 'Open settings');
+    renderRows();
+  }
+
+  settingsButton.addEventListener('click', () => {
+    if (settingsScreen.hidden) showSettings();
+    else hideSettings();
+  });
+
+  function getAllCampaigns() {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(CAMPAIGN_STORE, 'readonly');
+      const req = tx.objectStore(CAMPAIGN_STORE).getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function renderCampaigns() {
+    campaignRows.replaceChildren();
+    let campaigns = [];
+    try { campaigns = await getAllCampaigns(); }
+    catch (error) { message.hidden = false; message.textContent = 'Unable to read Campaigns.'; return; }
+    campaigns.sort((a, b) => a.CampaignId - b.CampaignId);
+    campaigns.forEach(campaign => {
+      const tr = document.createElement('tr');
+      const activeCell = document.createElement('td');
+      activeCell.className = 'campaign-active-cell';
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'activeCampaign';
+      radio.checked = campaign.Active === 1;
+      radio.setAttribute('aria-label', `Set ${campaign.Name} as active campaign`);
+      radio.addEventListener('change', () => setActiveCampaign(campaign.CampaignId));
+      activeCell.appendChild(radio);
+      const nameCell = document.createElement('td');
+      nameCell.textContent = campaign.Name;
+      nameCell.title = `${campaign.Year} · ${campaign.Type}`;
+      tr.append(activeCell, nameCell);
+      campaignRows.appendChild(tr);
+    });
+  }
+
+  async function setActiveCampaign(campaignId) {
+    try {
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(CAMPAIGN_STORE, 'readwrite');
+        const store = tx.objectStore(CAMPAIGN_STORE);
+        const req = store.getAll();
+        req.onsuccess = () => {
+          (req.result || []).forEach(campaign => {
+            campaign.Active = campaign.CampaignId === campaignId ? 1 : 0;
+            store.put(campaign);
+          });
+        };
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error || new Error('Could not update active campaign.'));
+        tx.onabort = () => reject(tx.error || new Error('Could not update active campaign.'));
+      });
+      await renderCampaigns();
+    } catch (error) {
+      message.hidden = false;
+      message.textContent = 'Unable to set the active campaign.';
+      console.error(error);
+    }
+  }
+
+  addCampaignButton.addEventListener('click', async () => {
+    const name = campaignNameInput.value.trim();
+    const yearText = campaignYearInput.value.trim();
+    const year = Number(yearText);
+    const type = campaignTypeInput.value;
+    if (!name) { campaignNameInput.focus(); message.hidden = false; message.textContent = 'Campaign Name is required.'; return; }
+    if (!/^\d{4}$/.test(yearText) || !Number.isInteger(year) || year < 1000 || year > 9999) {
+      campaignYearInput.focus(); message.hidden = false; message.textContent = 'Enter a four-digit year.'; return;
+    }
+    if (!['Primary', 'General', 'Special'].includes(type)) {
+      message.hidden = false; message.textContent = 'Select a valid Campaign Type.'; return;
+    }
+    try {
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(CAMPAIGN_STORE, 'readwrite');
+        tx.objectStore(CAMPAIGN_STORE).add({ Active: 0, Name: name, Year: year, Type: type });
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error || new Error('Could not add campaign.'));
+        tx.onabort = () => reject(tx.error || new Error('Could not add campaign.'));
+      });
+      campaignNameInput.value = '';
+      campaignYearInput.value = '2026';
+      campaignTypeInput.value = 'Primary';
+      message.hidden = false;
+      message.textContent = 'Campaign added.';
+      await renderCampaigns();
+    } catch (error) {
+      message.hidden = false;
+      message.textContent = 'Campaign could not be added.';
+      console.error(error);
+    }
+  });
 
   exportButton.addEventListener('click', async () => {
     try {

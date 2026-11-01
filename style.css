@@ -574,3 +574,47 @@ input[type="radio"].progress-dot {
 
 
 /* b1v21: trim Progression percentage to a whole number and shift the indicators/readout 5px right. */
+
+
+/* b1v22 Settings and Campaigns screen. */
+#settingsButton {
+  min-height: 36px;
+  height: 36px;
+  min-width: 76px;
+  padding: 4px 9px;
+  font-size: .82rem;
+  border: 1px solid #777;
+  border-radius: 5px;
+  background: #e6e6e6;
+  white-space: nowrap;
+}
+#settingsScreen { margin: 8px 0 12px; }
+#settingsScreen[hidden] { display: none !important; }
+.settings-backup-buttons { display: flex; gap: 8px; margin: 0 0 14px; }
+.settings-backup-buttons button, .campaign-entry button {
+  min-height: 36px; padding: 6px 15px; font-size: .95rem;
+  border: 1px solid #777; border-radius: 5px; background: #e6e6e6;
+}
+.campaign-editor { border-top: 1px solid #d0d3d8; padding-top: 12px; }
+.campaign-entry { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+.campaign-entry label { font-weight: 700; white-space: nowrap; }
+#campaignName { flex: 1 1 160px; min-width: 120px; }
+#campaignYear { width: 76px; }
+#campaignName, #campaignYear, #campaignType {
+  min-height: 36px; padding: 5px 7px; border: 1px solid #888; border-radius: 5px; font: inherit;
+}
+#campaignType { min-width: 112px; }
+.campaign-entry button { margin-left: auto; }
+.campaign-list-wrap { overflow-x: auto; border: 1px solid #d0d3d8; border-radius: 6px; background: #fff; }
+.campaign-table { width: 100%; border-collapse: collapse; }
+.campaign-table th, .campaign-table td { padding: 8px 10px; border-bottom: 1px solid #e0e2e6; text-align: left; }
+.campaign-table th { background: #e9edf2; }
+.campaign-table tr:last-child td { border-bottom: 0; }
+.campaign-active-cell { width: 76px; text-align: center !important; }
+.campaign-active-cell input { width: 20px; height: 20px; }
+@media (max-width: 420px) {
+  #settingsButton { font-size: .72rem; padding: 4px 6px; min-width: 68px; }
+  .campaign-entry { gap: 6px; }
+  #campaignName { flex-basis: 100%; }
+  #campaignYear { width: 72px; }
+}
